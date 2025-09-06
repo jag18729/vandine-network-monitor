@@ -1,0 +1,57 @@
+{
+  "name": "Network Operations Agent",
+  "version": "1.0.0",
+  "description": "Intelligent agent for network monitoring and task automation",
+  "deployment": {
+    "primary": "cloudflare-workers",
+    "executor": "raspberry-pi",
+    "coordination": "hybrid"
+  },
+  "capabilities": [
+    "network-monitoring",
+    "alert-management",
+    "auto-remediation",
+    "performance-optimization",
+    "security-scanning",
+    "task-prioritization",
+    "github-integration",
+    "deployment-automation"
+  ],
+  "priorities": {
+    "critical": [
+      "security-breach",
+      "service-down",
+      "network-outage"
+    ],
+    "high": [
+      "performance-degradation",
+      "ssl-expiry",
+      "disk-space"
+    ],
+    "medium": [
+      "dependency-updates",
+      "backup-verification",
+      "log-rotation"
+    ],
+    "low": [
+      "metrics-collection",
+      "report-generation",
+      "cleanup-tasks"
+    ]
+  },
+  "integrations": {
+    "github": {
+      "repo": "jag18729/vandine-network-monitor",
+      "auto_pr": true,
+      "auto_merge_deps": false
+    },
+    "cloudflare": {
+      "zone_id": "YOUR_ZONE_ID",
+      "account_id": "YOUR_ACCOUNT_ID"
+    },
+    "monitoring": {
+      "prometheus": "http://localhost:9090",
+      "grafana": "http://localhost:3000"
+    }
+  }
+}
