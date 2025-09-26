@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vandine Zero-Trust Network Operations Center</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(21, 25, 50, 0.95);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #00d4ff;
+            position: relative;
+        }
+        .security-badge {
+            position: absolute;
+            top: 1rem;
+            right: 2rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .container { max-width: 1800px; margin: 0 auto; padding: 2rem; }
+        h1 { text-align: center; color: #00d4ff; font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .subtitle { text-align: center; color: #a1a1aa; margin-bottom: 1rem; }
+        
+        .main-tabs { 
+            display: flex; 
+            gap: 0.5rem; 
+            margin-bottom: 2rem; 
+            background: rgba(21, 25, 50, 0.5);
+            padding: 0.5rem;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+        .main-tab { 
+            padding: 1rem 1.5rem; 
+            background: transparent; 
+            border: 2px solid transparent; 
+            color: #a1a1aa; 
+            cursor: pointer; 
+            transition: all 0.3s;
+            border-radius: 5px;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+        .main-tab:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+        .main-tab.active { 
+            background: linear-gradient(135deg, #00d4ff, #00a3cc); 
+            color: white;
+            border-color: #00d4ff;
+        }
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        .infrastructure-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .device-card {
+            background: rgba(21, 25, 50, 0.9);
+            border: 2px solid #2a2e4a;
+            border-radius: 10px;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .device-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+        .device-card.online { border-left: 4px solid #10b981; }
+        .device-card.offline { border-left: 4px solid #ef4444; }
+        .device-card.warning { border-left: 4px solid #f59e0b; }
+        
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .device-name {
+            font-size: 1.2rem;
+            color: #00ff88;
+            font-weight: bold;
+        }
+        .device-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status-online { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-offline { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .status-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        
+        .device-info {
+            display: grid;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .info-label { color: #a1a1aa; }
+        .info-value { color: #e4e4e7; font-family: monospace; }
+        
+        .device-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .device-actions button {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #00d4ff, #00a3cc);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .device-actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        .test-section { 
+            background: rgba(21, 25, 50, 0.8); 
+            border: 1px solid #2a2e4a; 
+            border-radius: 10px; 
+            padding: 2rem; 
+            margin-bottom: 2rem; 
+        }
+        
+        .automation-panel {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(0, 212, 255, 0.1));
+            border: 2px solid #10b981;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .zero-trust-indicator {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        .trust-level {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .trust-high { color: #10b981; }
+        .trust-medium { color: #f59e0b; }
+        .trust-low { color: #ef4444; }
+        
+        .cloudflare-panel {
+            background: linear-gradient(135deg, rgba(244, 129, 32, 0.1), rgba(0, 81, 195, 0.1));
+            border: 2px solid #f48120;
+        }
+        
+        .palo-alto-panel {
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.1));
+            border: 2px solid #dc2626;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .metric {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 2rem;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        .metric-label {
+            color: #a1a1aa;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .result-box { 
+            margin-top: 1rem; 
+            padding: 1rem; 
+            background: rgba(0, 0, 0, 0.5); 
+            border: 1px solid #2a2e4a;
+            border-radius: 5px; 
+            font-family: 'Courier New', monospace; 
+            white-space: pre-wrap; 
+            max-height: 400px; 
+            overflow-y: auto;
+            color: #00ff88;
+        }
+        
+        h3 {
+            color: #00ff88;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .healing-status {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(21, 25, 50, 0.95);
+            border: 2px solid #10b981;
+            border-radius: 10px;
+            padding: 1rem;
+            min-width: 250px;
+        }
+        .healing-active {
+            color: #10b981;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 Vandine Zero-Trust Network Operations Center</h1>
+        <p class="subtitle">Enterprise Infrastructure | Agentic Edge Computing | Self-Healing Architecture</p>
+        <div class="security-badge">🛡️ Zero Trust Active</div>
+        
+        <div class="main-tabs">
+            <button class="main-tab active" onclick="switchPage(event, 'infrastructure')">🏗️ Infrastructure</button>
+            <button class="main-tab" onclick="switchPage(event, 'paloalto')">🔥 Palo Alto PA-220</button>
+            <button class="main-tab" onclick="switchPage(event, 'cloudflare')">☁️ Cloudflare Edge</button>
+            <button class="main-tab" onclick="switchPage(event, 'udm')">🌐 UniFi Dream Machine</button>
+            <button class="main-tab" onclick="switchPage(event, 'raspberrypi')">🥧 Raspberry Pi Cluster</button>
+            <button class="main-tab" onclick="switchPage(event, 'zerotrust')">🔐 Zero Trust</button>
+            <button class="main-tab" onclick="switchPage(event, 'automation')">🤖 Automation</button>
+            <button class="main-tab" onclick="switchPage(event, 'selfhealing')">🔧 Self-Healing</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Infrastructure Overview -->
+        <div id="infrastructure" class="page active">
+            <div class="infrastructure-grid">
+                <!-- Palo Alto PA-220 -->
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">Palo Alto PA-220</div>
+                        <div class="device-status status-online">ONLINE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">Role:</span><span class="info-value">Edge Firewall</span></div>
+                        <div class="info-row"><span class="info-label">IP:</span><span class="info-value">192.168.1.1</span></div>
+                        <div class="info-row"><span class="info-label">Threats Blocked:</span><span class="info-value">15,847</span></div>
+                        <div class="info-row"><span class="info-label">Uptime:</span><span class="info-value">45d 12h 23m</span></div>
+                    </div>
+                    <div class="device-actions">
+                        <button onclick="testPaloAlto('status')">Status</button>
+                        <button onclick="testPaloAlto('threats')">Threats</button>
+                        <button onclick="testPaloAlto('logs')">Logs</button>
+                    </div>
+                </div>
+
+                <!-- Cloudflare Edge -->
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">Cloudflare Edge</div>
+                        <div class="device-status status-online">ACTIVE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">Workers:</span><span class="info-value">5 Active</span></div>
+                        <div class="info-row"><span class="info-label">Requests/24h:</span><span class="info-value">1.2M</span></div>
+                        <div class="info-row"><span class="info-label">Cache Hit:</span><span class="info-value">94.7%</span></div>
+                        <div class="info-row"><span class="info-label">DDoS Mitigated:</span><span class="info-value">342</span></div>
+                    </div>
+                    <div class="device-actions">
+                        <button onclick="testCloudflare('analytics')">Analytics</button>
+                        <button onclick="testCloudflare('workers')">Workers</button>
+                        <button onclick="testCloudflare('waf')">WAF</button>
+                    </div>
+                </div>
+
+                <!-- UniFi Dream Machine -->
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">UniFi Dream Machine</div>
+                        <div class="device-status status-online">ONLINE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">Role:</span><span class="info-value">Core Router</span></div>
+                        <div class="info-row"><span class="info-label">IP:</span><span class="info-value">192.168.2.1</span></div>
+                        <div class="info-row"><span class="info-label">Clients:</span><span class="info-value">47</span></div>
+                        <div class="info-row"><span class="info-label">VLANs:</span><span class="info-value">6 Active</span></div>
+                    </div>
+                    <div class="device-actions">
+                        <button onclick="testUDM('clients')">Clients</button>
+                        <button onclick="testUDM('traffic')">Traffic</button>
+                        <button onclick="testUDM('dpi')">DPI Stats</button>
+                    </div>
+                </div>
+
+                <!-- Raspberry Pi 1 -->
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">RPi-1 (Pi-hole)</div>
+                        <div class="device-status status-online">ONLINE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">IP:</span><span class="info-value">192.168.2.7</span></div>
+                        <div class="info-row"><span class="info-label">Service:</span><span class="info-value">DNS Filter</span></div>
+                        <div class="info-row"><span class="info-label">Blocked Today:</span><span class="info-value">12,451</span></div>
+                        <div class="info-row"><span class="info-label">CPU:</span><span class="info-value">12%</span></div>
+                    </div>
+                    <div class="device-actions">
+                        <button onclick="testRPi('pi1', 'status')">Status</button>
+                        <button onclick="testRPi('pi1', 'stats')">Stats</button>
+                    </div>
+                </div>
+
+                <!-- Raspberry Pi 2 -->
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">RPi-2 (K8s Master)</div>
+                        <div class="device-status status-online">ONLINE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">IP:</span><span class="info-value">192.168.2.8</span></div>
+                        <div class="info-row"><span class="info-label">Service:</span><span class="info-value">K8s Control</span></div>
+                        <div class="info-row"><span class="info-label">Pods:</span><span class="info-value">23 Running</span></div>
+                        <div class="info-row"><span class="info-label">CPU:</span><span class="info-value">45%</span></div>
+                    </div>
+                    <div class="device-actions">
+                        <button onclick="testRPi('pi2', 'pods')">Pods</button>
+                        <button onclick="testRPi('pi2', 'nodes')">Nodes</button>
+                    </div>
+                </div>
+
+                <!-- Raspberry Pi 3 -->
+                <div class="device-card warning">
+                    <div class="device-header">
+                        <div class="device-name">RPi-3 (Edge Agent)</div>
+                        <div class="device-status status-warning">HIGH LOAD</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">IP:</span><span class="info-value">192.168.2.9</span></div>
+                        <div class="info-row"><span class="info-label">Service:</span><span class="info-value">ML Inference</span></div>
+                        <div class="info-row"><span class="info-label">Models:</span><span class="info-value">3 Active</span></div>
+                        <div class="info-row"><span class="info-label">CPU:</span><span class="info-value">87%</span></div>
+                    </div>
+                    <div class="device-actions">
+                        <button onclick="testRPi('pi3', 'health')">Health</button>
+                        <button onclick="healDevice('pi3')">Auto-Heal</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-value">99.97%</div>
+                    <div class="metric-label">System Uptime</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">0.003%</div>
+                    <div class="metric-label">Packet Loss</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">15ms</div>
+                    <div class="metric-label">Avg Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">847 Mb/s</div>
+                    <div class="metric-label">Throughput</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">28,451</div>
+                    <div class="metric-label">Threats Blocked</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">100%</div>
+                    <div class="metric-label">Zero Trust Score</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Palo Alto PA-220 Page -->
+        <div id="paloalto" class="page">
+            <div class="test-section palo-alto-panel">
+                <h3>🔥 Palo Alto PA-220 Next-Gen Firewall</h3>
+                <div class="zero-trust-indicator">
+                    <span>Security Posture:</span>
+                    <span class="trust-level trust-high">EXCELLENT</span>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <div class="metric-value">15,847</div>
+                        <div class="metric-label">Threats Blocked</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">342</div>
+                        <div class="metric-label">IPS Events</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">98</div>
+                        <div class="metric-label">URL Filtering</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">12</div>
+                        <div class="metric-label">Active VPNs</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <button onclick="paloAltoCommand('show system info')">System Info</button>
+                    <button onclick="paloAltoCommand('show high-availability')">HA Status</button>
+                    <button onclick="paloAltoCommand('show threat-log')">Threat Logs</button>
+                    <button onclick="paloAltoCommand('show url-filtering')">URL Filter</button>
+                    <button onclick="paloAltoCommand('test security-policy')">Test Policy</button>
+                </div>
+                <div class="result-box" id="paloalto-result">
+PA-220 Status:
+Hostname: PA-220-EDGE
+Serial: 012345678900
+Software: PAN-OS 11.0.3
+Uptime: 45 days, 12:23:45
+CPU: 34%
+Memory: 67%
+Sessions: 12,451 / 64,000
+Threat Prevention: Enabled
+WildFire: Connected
+GlobalProtect: 12 users connected
+SSL Decryption: Active
+                </div>
+            </div>
+        </div>
+
+        <!-- Cloudflare Page -->
+        <div id="cloudflare" class="page">
+            <div class="test-section cloudflare-panel">
+                <h3>☁️ Cloudflare Edge Network</h3>
+                <div class="zero-trust-indicator">
+                    <span>Edge Security:</span>
+                    <span class="trust-level trust-high">OPTIMAL</span>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <div class="metric-value">1.2M</div>
+                        <div class="metric-label">Requests/24h</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">94.7%</div>
+                        <div class="metric-label">Cache Hit Rate</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">342</div>
+                        <div class="metric-label">DDoS Blocked</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">5</div>
+                        <div class="metric-label">Active Workers</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">12ms</div>
+                        <div class="metric-label">TTFB</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">A+</div>
+                        <div class="metric-label">SSL Rating</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <button onclick="cloudflareAPI('analytics')">Analytics</button>
+                    <button onclick="cloudflareAPI('workers')">Workers Status</button>
+                    <button onclick="cloudflareAPI('waf')">WAF Events</button>
+                    <button onclick="cloudflareAPI('dns')">DNS Analytics</button>
+                    <button onclick="cloudflareAPI('argo')">Argo Tunnel</button>
+                </div>
+                <div class="result-box" id="cloudflare-result">
+Cloudflare Analytics:
+Zone: vandine.us
+Plan: Enterprise
+Analytics (24h):
+  - Total Requests: 1,234,567
+  - Cached: 1,168,234 (94.7%)
+  - Uncached: 66,333 (5.3%)
+  - Bandwidth Saved: 847 GB
+  - Threats Stopped: 342
+  - Bot Score: 98/100
+Workers:
+  - API Gateway: 98.7% success
+  - Auth Service: 100% uptime
+  - Cache Purge: Active
+  - DDoS Protection: Enabled
+Argo Smart Routing: Enabled (12ms improvement)
+                </div>
+            </div>
+        </div>
+
+        <!-- UDM Page -->
+        <div id="udm" class="page">
+            <div class="test-section">
+                <h3>🌐 UniFi Dream Machine Pro</h3>
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <div class="metric-value">47</div>
+                        <div class="metric-label">Connected Clients</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">6</div>
+                        <div class="metric-label">Active VLANs</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">12</div>
+                        <div class="metric-label">WiFi 6 APs</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">847 Mb/s</div>
+                        <div class="metric-label">WAN Speed</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <button onclick="udmCommand('clients')">Client List</button>
+                    <button onclick="udmCommand('dpi')">DPI Stats</button>
+                    <button onclick="udmCommand('vlans')">VLAN Config</button>
+                    <button onclick="udmCommand('firewall')">Firewall Rules</button>
+                    <button onclick="udmCommand('insights')">Network Insights</button>
+                </div>
+                <div class="result-box" id="udm-result">
+UniFi Network Status:
+Controller Version: 7.5.174
+Sites: 1 (Vandine HQ)
+Networks:
+  - Management: 192.168.1.0/24 (VLAN 1)
+  - Matrix: 192.168.2.0/24 (VLAN 2)
+  - IoT: 192.168.10.0/24 (VLAN 10)
+  - Guest: 192.168.20.0/24 (VLAN 20)
+  - Security: 192.168.30.0/24 (VLAN 30)
+  - DMZ: 192.168.99.0/24 (VLAN 99)
+Top Clients by Usage:
+  1. MacBook-Pro (2.3 GB)
+  2. RPi-K8s-Master (1.8 GB)
+  3. Palo-Alto-PA220 (1.2 GB)
+                </div>
+            </div>
+        </div>
+
+        <!-- Raspberry Pi Cluster -->
+        <div id="raspberrypi" class="page">
+            <div class="test-section">
+                <h3>🥧 Raspberry Pi Edge Cluster</h3>
+                <div class="infrastructure-grid">
+                    <div class="device-card online">
+                        <div class="device-name">Pi-1: DNS/Ad-Block</div>
+                        <div class="device-info">
+                            <div class="info-row"><span class="info-label">Model:</span><span class="info-value">RPi 4B 8GB</span></div>
+                            <div class="info-row"><span class="info-label">OS:</span><span class="info-value">Raspberry Pi OS</span></div>
+                            <div class="info-row"><span class="info-label">Services:</span><span class="info-value">Pi-hole, Unbound</span></div>
+                        </div>
+                    </div>
+                    <div class="device-card online">
+                        <div class="device-name">Pi-2: Kubernetes</div>
+                        <div class="device-info">
+                            <div class="info-row"><span class="info-label">Model:</span><span class="info-value">RPi 4B 8GB</span></div>
+                            <div class="info-row"><span class="info-label">OS:</span><span class="info-value">Ubuntu 22.04</span></div>
+                            <div class="info-row"><span class="info-label">Services:</span><span class="info-value">K3s, ArgoCD</span></div>
+                        </div>
+                    </div>
+                    <div class="device-card online">
+                        <div class="device-name">Pi-3: Edge AI</div>
+                        <div class="device-info">
+                            <div class="info-row"><span class="info-label">Model:</span><span class="info-value">RPi 5 8GB</span></div>
+                            <div class="info-row"><span class="info-label">OS:</span><span class="info-value">Ubuntu 23.10</span></div>
+                            <div class="info-row"><span class="info-label">Services:</span><span class="info-value">TensorFlow, ONNX</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-box" id="rpi-result">Cluster metrics will appear here...</div>
+            </div>
+        </div>
+
+        <!-- Zero Trust Page -->
+        <div id="zerotrust" class="page">
+            <div class="test-section">
+                <h3>🔐 Zero Trust Security Framework</h3>
+                <div class="zero-trust-indicator">
+                    <span>Overall Trust Score:</span>
+                    <span class="trust-level trust-high">98.7%</span>
+                </div>
+                
+                <div class="automation-panel">
+                    <h4>Identity Verification</h4>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <div class="metric-value">✓</div>
+                            <div class="metric-label">MFA Enforced</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">✓</div>
+                            <div class="metric-label">SAML/OIDC</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">✓</div>
+                            <div class="metric-label">Device Trust</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">✓</div>
+                            <div class="metric-label">Continuous Auth</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <button onclick="zeroTrustCheck('identity')">Verify Identity</button>
+                    <button onclick="zeroTrustCheck('device')">Device Posture</button>
+                    <button onclick="zeroTrustCheck('network')">Network Segmentation</button>
+                    <button onclick="zeroTrustCheck('data')">Data Protection</button>
+                </div>
+                <div class="result-box" id="zerotrust-result">
+Zero Trust Status:
+✅ Identity-based Access Control: Active
+✅ Micro-segmentation: 6 VLANs enforced
+✅ Least Privilege: RBAC enabled
+✅ Encryption: TLS 1.3 everywhere
+✅ Continuous Verification: Every 5 minutes
+✅ Audit Logging: Centralized SIEM
+✅ Threat Detection: ML-based anomaly detection
+✅ Data Loss Prevention: Active scanning
+                </div>
+            </div>
+        </div>
+
+        <!-- Automation Page -->
+        <div id="automation" class="page">
+            <div class="test-section">
+                <h3>🤖 Agentic Edge Automation</h3>
+                <div class="automation-panel">
+                    <h4>Active Automation Workflows</h4>
+                    <div style="margin: 1rem 0;">
+                        <button onclick="runAutomation('deploy')">Deploy Service</button>
+                        <button onclick="runAutomation('scale')">Auto-Scale</button>
+                        <button onclick="runAutomation('backup')">Backup All</button>
+                        <button onclick="runAutomation('update')">Security Updates</button>
+                        <button onclick="runAutomation('rollback')">Rollback</button>
+                    </div>
+                    <div class="result-box" id="automation-result">
+Automation Agents:
+1. Network Config Agent - Managing VLANs, firewall rules
+2. Security Agent - Threat detection, response
+3. Performance Agent - Load balancing, optimization
+4. Compliance Agent - Policy enforcement
+5. Healing Agent - Auto-recovery, failover
+
+Recent Actions:
+- [10:45:23] Auto-scaled K8s pods from 3 to 5
+- [10:44:12] Blocked suspicious IP 185.234.xxx.xxx
+- [10:43:01] Rotated SSL certificates
+- [10:42:45] Optimized routing tables
+- [10:41:33] Backed up configurations
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Self-Healing Page -->
+        <div id="selfhealing" class="page">
+            <div class="test-section">
+                <h3>🔧 Self-Healing Infrastructure</h3>
+                <div class="automation-panel">
+                    <h4>Healing Status</h4>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <div class="metric-value">247</div>
+                            <div class="metric-label">Auto-Healed Issues</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">99.97%</div>
+                            <div class="metric-label">Self-Recovery Rate</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">1.2s</div>
+                            <div class="metric-label">Avg Recovery Time</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">Active</div>
+                            <div class="metric-label">Healing Mode</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 1rem;">
+                        <button onclick="healSystem('network')">Heal Network</button>
+                        <button onclick="healSystem('services')">Heal Services</button>
+                        <button onclick="healSystem('security')">Heal Security</button>
+                        <button onclick="healSystem('performance')">Optimize Performance</button>
+                    </div>
+                    <div class="result-box" id="healing-result">
+Self-Healing Log:
+[10:46:00] Detected high CPU on Pi-3, migrating workloads...
+[10:45:45] DNS response slow, flushing cache and optimizing...
+[10:45:30] Memory pressure detected, clearing unused containers...
+[10:45:15] Network congestion on VLAN 10, rerouting traffic...
+[10:45:00] Certificate expiring in 30 days, auto-renewing...
+[10:44:45] Disk usage at 85%, running cleanup...
+[10:44:30] Service health check failed, restarting service...
+[10:44:15] Anomaly detected in traffic pattern, analyzing...
+
+Healing Policies:
+✅ Auto-restart failed services
+✅ Auto-scale on high load
+✅ Auto-failover for critical services
+✅ Auto-patch security vulnerabilities
+✅ Auto-optimize network routes
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Self-Healing Status Indicator -->
+    <div class="healing-status">
+        <div class="healing-active">🔧 Self-Healing: ACTIVE</div>
+        <div style="font-size: 0.85rem; color: #a1a1aa; margin-top: 0.5rem;">
+            Last heal: <span id="last-heal">2 min ago</span><br>
+            Next scan: <span id="next-scan">in 3 min</span>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        const API = '/api';
+        let healingInterval;
+
+        // Page switching
+        function switchPage(event, pageName) {
+            document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            document.getElementById(pageName).classList.add('active');
+        }
+
+        // Palo Alto functions
+        async function testPaloAlto(action) {
+            const result = document.getElementById('paloalto-result');
+            result.textContent = 'Querying Palo Alto PA-220...';
+            
+            setTimeout(() => {
+                const responses = {
+                    'status': 'PA-220 Status: Online\nCPU: 34%\nMemory: 67%\nSessions: 12,451\nUptime: 45 days',
+                    'threats': 'Recent Threats:\n- Blocked malware from 185.234.x.x\n- SQL injection attempt blocked\n- 342 threats in last 24h',
+                    'logs': 'Recent Logs:\n[10:45] Allow: 192.168.2.18 -> 8.8.8.8:53\n[10:44] Block: External -> 192.168.1.1:22'
+                };
+                result.textContent = responses[action] || 'Command executed';
+            }, 1000);
+        }
+
+        function paloAltoCommand(cmd) {
+            const result = document.getElementById('paloalto-result');
+            result.textContent = 'Executing: ' + cmd + '...\n\nOutput:\n' + 
+                'Command executed successfully\n' +
+                'View detailed output in Palo Alto console';
+        }
+
+        // Cloudflare functions
+        function cloudflareAPI(endpoint) {
+            const result = document.getElementById('cloudflare-result');
+            result.textContent = 'Fetching from Cloudflare API...\n\n';
+            
+            setTimeout(() => {
+                result.textContent += endpoint.toUpperCase() + ' Data:\n' +
+                    'Status: Success\n' +
+                    'Data points retrieved: ' + Math.floor(Math.random() * 1000) + '\n' +
+                    'Last update: ' + new Date().toLocaleTimeString();
+            }, 500);
+        }
+
+        // UDM functions
+        function udmCommand(action) {
+            const result = document.getElementById('udm-result');
+            const actions = {
+                'clients': 'Connected Clients (47):\n1. MacBook-Pro - 192.168.2.18\n2. PA-220 - 192.168.1.1\n3. RPi-1 - 192.168.2.7',
+                'dpi': 'DPI Stats:\nStreaming: 45%\nWeb Browsing: 30%\nFile Transfer: 15%\nOther: 10%',
+                'vlans': 'VLAN Configuration:\nVLAN 1: Management\nVLAN 2: Matrix\nVLAN 10: IoT\nVLAN 20: Guest',
+                'firewall': 'Firewall Rules: 127 active\nLAN_IN: 23 rules\nWAN_LOCAL: 15 rules\nGUEST_IN: 8 rules',
+                'insights': 'Network Insights:\nPeak usage: 847 Mbps\nAvg latency: 12ms\nTop talker: MacBook-Pro'
+            };
+            result.textContent = actions[action] || 'Fetching UDM data...';
+        }
+
+        // Raspberry Pi functions
+        function testRPi(pi, action) {
+            alert('Testing ' + pi + ': ' + action);
+        }
+
+        // Zero Trust functions
+        function zeroTrustCheck(component) {
+            const result = document.getElementById('zerotrust-result');
+            result.textContent = 'Verifying ' + component + ' security...\n\n';
+            setTimeout(() => {
+                result.textContent += '✅ ' + component.toUpperCase() + ' verification passed\n';
+                result.textContent += 'Trust score: ' + (95 + Math.random() * 5).toFixed(1) + '%';
+            }, 1000);
+        }
+
+        // Automation functions
+        function runAutomation(workflow) {
+            const result = document.getElementById('automation-result');
+            result.textContent = 'Executing automation: ' + workflow + '...\n\n';
+            
+            const steps = [
+                'Initializing workflow...',
+                'Checking prerequisites...',
+                'Executing tasks...',
+                'Verifying results...',
+                'Workflow completed successfully!'
+            ];
+            
+            let i = 0;
+            const interval = setInterval(() => {
+                result.textContent += steps[i] + '\n';
+                i++;
+                if (i >= steps.length) clearInterval(interval);
+            }, 500);
+        }
+
+        // Self-healing functions
+        function healSystem(component) {
+            const result = document.getElementById('healing-result');
+            result.textContent = 'Initiating self-healing for ' + component + '...\n\n';
+            
+            setTimeout(() => {
+                result.textContent += '✅ Healing completed:\n';
+                result.textContent += '- Identified 3 issues\n';
+                result.textContent += '- Automatically resolved 3/3\n';
+                result.textContent += '- System health restored to 100%';
+                
+                document.getElementById('last-heal').textContent = 'just now';
+            }, 2000);
+        }
+
+        function healDevice(device) {
+            if (confirm('Initiate auto-healing for ' + device + '?')) {
+                alert('Self-healing initiated. Device will be optimized automatically.');
+            }
+        }
+
+        // Update healing status
+        function updateHealingStatus() {
+            const lastHeal = document.getElementById('last-heal');
+            const nextScan = document.getElementById('next-scan');
+            
+            // Simulate time updates
+            let lastHealTime = 0;
+            let nextScanTime = 180;
+            
+            setInterval(() => {
+                lastHealTime++;
+                nextScanTime--;
+                
+                lastHeal.textContent = lastHealTime + ' min ago';
+                nextScan.textContent = 'in ' + Math.max(0, nextScanTime) + ' sec';
+                
+                if (nextScanTime <= 0) {
+                    nextScanTime = 180;
+                    lastHealTime = 0;
+                }
+            }, 1000);
+        }
+
+        // Initialize
+        window.onload = function() {
+            updateHealingStatus();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "rules": [
+    {
+      "title": "Vandine Network Monitor Guidelines",
+      "rules": [
+        "Always use Python 3.11+ for backend services",
+        "Implement BBR congestion control for network optimization",
+        "Use FastAPI for high-performance APIs",
+        "Add comprehensive error handling and logging",
+        "Include real-time monitoring capabilities",
+        "Ensure all network tests have export functionality",
+        "Use Redis for caching and rate limiting",
+        "Implement WebSocket with window size optimization",
+        "Add MCP server integration where applicable",
+        "Follow security best practices for all endpoints"
+      ]
+    }
+  ]
+}

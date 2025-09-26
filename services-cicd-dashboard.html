@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vandine DevOps Operations Center</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(21, 25, 50, 0.95);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #00d4ff;
+            position: relative;
+        }
+        .status-indicators {
+            position: absolute;
+            top: 1rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .badge-healthy { background: linear-gradient(135deg, #10b981, #059669); }
+        .badge-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .badge-critical { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        
+        .container { max-width: 1900px; margin: 0 auto; padding: 2rem; }
+        h1 { text-align: center; color: #00d4ff; font-size: 2.5rem; margin-bottom: 0.5rem; }
+        
+        .main-tabs { 
+            display: flex; 
+            gap: 0.5rem; 
+            margin-bottom: 2rem; 
+            background: rgba(21, 25, 50, 0.5);
+            padding: 0.5rem;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+        .main-tab { 
+            padding: 1rem 1.5rem; 
+            background: transparent; 
+            border: 2px solid transparent; 
+            color: #a1a1aa; 
+            cursor: pointer; 
+            transition: all 0.3s;
+            border-radius: 5px;
+            white-space: nowrap;
+        }
+        .main-tab:hover { background: rgba(0, 212, 255, 0.1); }
+        .main-tab.active { 
+            background: linear-gradient(135deg, #00d4ff, #00a3cc); 
+            color: white;
+        }
+        
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .service-card {
+            background: rgba(21, 25, 50, 0.9);
+            border: 2px solid #2a2e4a;
+            border-radius: 10px;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+        
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .service-name {
+            font-size: 1.2rem;
+            color: #00ff88;
+            font-weight: bold;
+        }
+        .service-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        .status-green { background: #10b981; box-shadow: 0 0 10px #10b981; }
+        .status-yellow { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+        .status-red { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .service-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+        .metric-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 5px;
+        }
+        .metric-label {
+            color: #a1a1aa;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        .metric-value {
+            color: #00d4ff;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .service-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .service-actions button {
+            flex: 1;
+            padding: 0.5rem;
+            background: linear-gradient(135deg, #00d4ff, #00a3cc);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .service-actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        /* CI/CD Pipeline */
+        .pipeline-container {
+            background: rgba(21, 25, 50, 0.8);
+            border: 2px solid #2a2e4a;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .pipeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .pipeline-stages {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            padding: 2rem 0;
+        }
+        
+        .pipeline-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #00d4ff, #00a3cc);
+            z-index: 0;
+        }
+        
+        .stage {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stage-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto;
+            background: rgba(21, 25, 50, 0.95);
+            border: 3px solid #00d4ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .stage.active .stage-icon {
+            background: linear-gradient(135deg, #00d4ff, #00a3cc);
+            animation: rotate 2s linear infinite;
+        }
+        .stage.success .stage-icon {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-color: #10b981;
+        }
+        .stage.failed .stage-icon {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-color: #ef4444;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .stage-name {
+            color: #00ff88;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        .stage-time {
+            color: #a1a1aa;
+            font-size: 0.85rem;
+        }
+        
+        /* Deployment History */
+        .deployment-history {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .deployment-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid #2a2e4a;
+        }
+        .deployment-item:last-child { border-bottom: none; }
+        
+        .deployment-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 1rem;
+        }
+        
+        .deployment-info {
+            flex: 1;
+        }
+        .deployment-id {
+            color: #00d4ff;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .deployment-details {
+            color: #a1a1aa;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+        
+        .deployment-time {
+            color: #a1a1aa;
+            font-size: 0.85rem;
+        }
+        
+        /* Health Dashboard */
+        .health-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .health-card {
+            background: rgba(21, 25, 50, 0.9);
+            border: 1px solid #2a2e4a;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .health-score {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        .health-excellent { color: #10b981; }
+        .health-good { color: #00d4ff; }
+        .health-warning { color: #f59e0b; }
+        .health-critical { color: #ef4444; }
+        
+        .health-label {
+            color: #a1a1aa;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+        
+        /* Logs */
+        .log-viewer {
+            background: #000;
+            border: 1px solid #2a2e4a;
+            border-radius: 5px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            max-height: 400px;
+            overflow-y: auto;
+            color: #00ff88;
+        }
+        
+        .log-entry {
+            margin-bottom: 0.5rem;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .log-error { color: #ef4444; }
+        .log-warning { color: #f59e0b; }
+        .log-info { color: #00d4ff; }
+        .log-success { color: #10b981; }
+        
+        h3 {
+            color: #00ff88;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #00d4ff, #00a3cc);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+        button.danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        button.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Vandine DevOps Operations Center</h1>
+        <div class="status-indicators">
+            <div class="status-badge badge-healthy">✓ All Systems Operational</div>
+            <div class="status-badge badge-healthy">🔐 Security: Optimal</div>
+            <div class="status-badge badge-healthy">🤖 Automation: Active</div>
+        </div>
+        
+        <div class="main-tabs">
+            <button class="main-tab active" onclick="switchPage(event, 'services')">📊 Services Status</button>
+            <button class="main-tab" onclick="switchPage(event, 'cicd')">🔄 CI/CD Pipeline</button>
+            <button class="main-tab" onclick="switchPage(event, 'deployments')">🚢 Deployments</button>
+            <button class="main-tab" onclick="switchPage(event, 'health')">💚 Health Dashboard</button>
+            <button class="main-tab" onclick="switchPage(event, 'monitoring')">📈 Monitoring</button>
+            <button class="main-tab" onclick="switchPage(event, 'logs')">📝 Logs</button>
+            <button class="main-tab" onclick="switchPage(event, 'infrastructure')">🏗️ Infrastructure</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Services Status Page -->
+        <div id="services" class="page active">
+            <h3>Service Health Matrix</h3>
+            <div class="services-grid">
+                <!-- API Gateway -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-name">API Gateway</div>
+                        <div class="service-status status-green"></div>
+                    </div>
+                    <div class="service-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">Requests/min</div>
+                            <div class="metric-value">12,847</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Latency</div>
+                            <div class="metric-value">12ms</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Uptime</div>
+                            <div class="metric-value">99.99%</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Error Rate</div>
+                            <div class="metric-value">0.01%</div>
+                        </div>
+                    </div>
+                    <div class="service-actions">
+                        <button onclick="serviceAction('api-gateway', 'restart')">Restart</button>
+                        <button onclick="serviceAction('api-gateway', 'logs')">Logs</button>
+                        <button onclick="serviceAction('api-gateway', 'scale')">Scale</button>
+                    </div>
+                </div>
+
+                <!-- Kubernetes Cluster -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-name">Kubernetes Cluster</div>
+                        <div class="service-status status-green"></div>
+                    </div>
+                    <div class="service-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">Nodes</div>
+                            <div class="metric-value">3/3</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Pods</div>
+                            <div class="metric-value">47/50</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">CPU Usage</div>
+                            <div class="metric-value">67%</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Memory</div>
+                            <div class="metric-value">4.2/8 GB</div>
+                        </div>
+                    </div>
+                    <div class="service-actions">
+                        <button onclick="serviceAction('k8s', 'dashboard')">Dashboard</button>
+                        <button onclick="serviceAction('k8s', 'pods')">Pods</button>
+                        <button onclick="serviceAction('k8s', 'deploy')">Deploy</button>
+                    </div>
+                </div>
+
+                <!-- PostgreSQL Database -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-name">PostgreSQL Database</div>
+                        <div class="service-status status-green"></div>
+                    </div>
+                    <div class="service-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">Connections</div>
+                            <div class="metric-value">47/100</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">QPS</div>
+                            <div class="metric-value">3,241</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Size</div>
+                            <div class="metric-value">2.7 GB</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Replication</div>
+                            <div class="metric-value">In Sync</div>
+                        </div>
+                    </div>
+                    <div class="service-actions">
+                        <button onclick="serviceAction('postgres', 'backup')">Backup</button>
+                        <button onclick="serviceAction('postgres', 'metrics')">Metrics</button>
+                        <button onclick="serviceAction('postgres', 'optimize')">Optimize</button>
+                    </div>
+                </div>
+
+                <!-- Redis Cache -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-name">Redis Cache</div>
+                        <div class="service-status status-green"></div>
+                    </div>
+                    <div class="service-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">Hit Rate</div>
+                            <div class="metric-value">94.7%</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Keys</div>
+                            <div class="metric-value">124K</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Memory</div>
+                            <div class="metric-value">512 MB</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Ops/sec</div>
+                            <div class="metric-value">45K</div>
+                        </div>
+                    </div>
+                    <div class="service-actions">
+                        <button onclick="serviceAction('redis', 'flush')">Flush</button>
+                        <button onclick="serviceAction('redis', 'stats')">Stats</button>
+                        <button onclick="serviceAction('redis', 'backup')">Backup</button>
+                    </div>
+                </div>
+
+                <!-- Nginx Load Balancer -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-name">Nginx Load Balancer</div>
+                        <div class="service-status status-green"></div>
+                    </div>
+                    <div class="service-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">Requests</div>
+                            <div class="metric-value">847K/h</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Active</div>
+                            <div class="metric-value">234</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">SSL</div>
+                            <div class="metric-value">TLS 1.3</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Upstreams</div>
+                            <div class="metric-value">4/4</div>
+                        </div>
+                    </div>
+                    <div class="service-actions">
+                        <button onclick="serviceAction('nginx', 'reload')">Reload</button>
+                        <button onclick="serviceAction('nginx', 'config')">Config</button>
+                        <button onclick="serviceAction('nginx', 'ssl')">SSL</button>
+                    </div>
+                </div>
+
+                <!-- ElasticSearch -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-name">ElasticSearch</div>
+                        <div class="service-status status-yellow"></div>
+                    </div>
+                    <div class="service-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">Indices</div>
+                            <div class="metric-value">23</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Docs</div>
+                            <div class="metric-value">1.2M</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Size</div>
+                            <div class="metric-value">847 MB</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Shards</div>
+                            <div class="metric-value">45/46</div>
+                        </div>
+                    </div>
+                    <div class="service-actions">
+                        <button onclick="serviceAction('elastic', 'kibana')">Kibana</button>
+                        <button onclick="serviceAction('elastic', 'indices')">Indices</button>
+                        <button onclick="serviceAction('elastic', 'health')">Health</button>
+                    </div>
+                </div>
+
+                <!-- Docker Registry -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-name">Docker Registry</div>
+                        <div class="service-status status-green"></div>
+                    </div>
+                    <div class="service-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">Images</div>
+                            <div class="metric-value">147</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Tags</div>
+                            <div class="metric-value">523</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Size</div>
+                            <div class="metric-value">12.3 GB</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Pulls/day</div>
+                            <div class="metric-value">847</div>
+                        </div>
+                    </div>
+                    <div class="service-actions">
+                        <button onclick="serviceAction('registry', 'images')">Images</button>
+                        <button onclick="serviceAction('registry', 'gc')">Cleanup</button>
+                        <button onclick="serviceAction('registry', 'scan')">Scan</button>
+                    </div>
+                </div>
+
+                <!-- Prometheus -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-name">Prometheus</div>
+                        <div class="service-status status-green"></div>
+                    </div>
+                    <div class="service-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">Targets</div>
+                            <div class="metric-value">23/23</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Series</div>
+                            <div class="metric-value">124K</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Samples/s</div>
+                            <div class="metric-value">12K</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Storage</div>
+                            <div class="metric-value">2.1 GB</div>
+                        </div>
+                    </div>
+                    <div class="service-actions">
+                        <button onclick="serviceAction('prometheus', 'alerts')">Alerts</button>
+                        <button onclick="serviceAction('prometheus', 'targets')">Targets</button>
+                        <button onclick="serviceAction('prometheus', 'query')">Query</button>
+                    </div>
+                </div>
+
+                <!-- Grafana -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-name">Grafana</div>
+                        <div class="service-status status-green"></div>
+                    </div>
+                    <div class="service-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">Dashboards</div>
+                            <div class="metric-value">42</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Users</div>
+                            <div class="metric-value">15</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Alerts</div>
+                            <div class="metric-value">3 Active</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Data Sources</div>
+                            <div class="metric-value">8</div>
+                        </div>
+                    </div>
+                    <div class="service-actions">
+                        <button onclick="serviceAction('grafana', 'open')">Open</button>
+                        <button onclick="serviceAction('grafana', 'alerts')">Alerts</button>
+                        <button onclick="serviceAction('grafana', 'backup')">Backup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CI/CD Pipeline Page -->
+        <div id="cicd" class="page">
+            <div class="pipeline-container">
+                <div class="pipeline-header">
+                    <h3>🔄 Continuous Integration & Deployment Pipeline</h3>
+                    <div class="btn-group">
+                        <button onclick="triggerPipeline('main')">🚀 Deploy to Production</button>
+                        <button onclick="triggerPipeline('staging')">📦 Deploy to Staging</button>
+                        <button class="danger" onclick="abortPipeline()">⏹️ Abort Pipeline</button>
+                    </div>
+                </div>
+
+                <div class="pipeline-stages">
+                    <div class="pipeline-line"></div>
+                    
+                    <div class="stage success" id="stage-source">
+                        <div class="stage-icon">📥</div>
+                        <div class="stage-name">Source</div>
+                        <div class="stage-time">2s</div>
+                    </div>
+                    
+                    <div class="stage success" id="stage-build">
+                        <div class="stage-icon">🔨</div>
+                        <div class="stage-name">Build</div>
+                        <div class="stage-time">45s</div>
+                    </div>
+                    
+                    <div class="stage success" id="stage-test">
+                        <div class="stage-icon">🧪</div>
+                        <div class="stage-name">Test</div>
+                        <div class="stage-time">1m 23s</div>
+                    </div>
+                    
+                    <div class="stage active" id="stage-security">
+                        <div class="stage-icon">🔒</div>
+                        <div class="stage-name">Security Scan</div>
+                        <div class="stage-time">Running...</div>
+                    </div>
+                    
+                    <div class="stage" id="stage-deploy">
+                        <div class="stage-icon">🚀</div>
+                        <div class="stage-name">Deploy</div>
+                        <div class="stage-time">-</div>
+                    </div>
+                    
+                    <div class="stage" id="stage-verify">
+                        <div class="stage-icon">✅</div>
+                        <div class="stage-name">Verify</div>
+                        <div class="stage-time">-</div>
+                    </div>
+                </div>
+
+                <h4 style="margin-top: 2rem; margin-bottom: 1rem;">Pipeline Configuration</h4>
+                <div class="log-viewer" id="pipeline-config">
+# .gitlab-ci.yml / Jenkinsfile / GitHub Actions
+stages:
+  - source
+  - build
+  - test
+  - security
+  - deploy
+  - verify
+
+variables:
+  DOCKER_REGISTRY: registry.vandine.us
+  K8S_NAMESPACE: production
+  
+build:
+  stage: build
+  script:
+    - docker build -t $DOCKER_REGISTRY/app:$CI_COMMIT_SHA .
+    - docker push $DOCKER_REGISTRY/app:$CI_COMMIT_SHA
+    
+test:
+  stage: test
+  script:
+    - npm test
+    - npm run test:integration
+    - npm run test:e2e
+  coverage: '/Coverage: ([0-9.]+)%/'
+  
+security_scan:
+  stage: security
+  script:
+    - trivy image $DOCKER_REGISTRY/app:$CI_COMMIT_SHA
+    - snyk test
+    - owasp-dependency-check
+    
+deploy:
+  stage: deploy
+  script:
+    - kubectl set image deployment/app app=$DOCKER_REGISTRY/app:$CI_COMMIT_SHA
+    - kubectl rollout status deployment/app
+  environment:
+    name: production
+    url: https://vandine.us
+                </div>
+            </div>
+        </div>
+
+        <!-- Deployments Page -->
+        <div id="deployments" class="page">
+            <div class="pipeline-container">
+                <h3>🚢 Recent Deployments</h3>
+                <div class="btn-group">
+                    <button class="success" onclick="deploymentAction('promote')">Promote to Prod</button>
+                    <button onclick="deploymentAction('rollback')">Rollback</button>
+                    <button onclick="deploymentAction('history')">Full History</button>
+                </div>
+                
+                <div class="deployment-history">
+                    <div class="deployment-item">
+                        <div class="deployment-status status-green"></div>
+                        <div class="deployment-info">
+                            <div class="deployment-id">#1247 - main - abc123f</div>
+                            <div class="deployment-details">Production | v2.4.7 | 3 replicas | By: CI/CD Bot</div>
+                        </div>
+                        <div class="deployment-time">2 minutes ago</div>
+                    </div>
+                    
+                    <div class="deployment-item">
+                        <div class="deployment-status status-green"></div>
+                        <div class="deployment-info">
+                            <div class="deployment-id">#1246 - feature/auth - def456g</div>
+                            <div class="deployment-details">Staging | v2.4.7-beta | 2 replicas | By: john.doe</div>
+                        </div>
+                        <div class="deployment-time">15 minutes ago</div>
+                    </div>
+                    
+                    <div class="deployment-item">
+                        <div class="deployment-status status-red"></div>
+                        <div class="deployment-info">
+                            <div class="deployment-id">#1245 - hotfix/security - ghi789h</div>
+                            <div class="deployment-details">Production | v2.4.6 | Rollback triggered | By: Auto-healing</div>
+                        </div>
+                        <div class="deployment-time">1 hour ago</div>
+                    </div>
+                    
+                    <div class="deployment-item">
+                        <div class="deployment-status status-green"></div>
+                        <div class="deployment-info">
+                            <div class="deployment-id">#1244 - main - jkl012i</div>
+                            <div class="deployment-details">Production | v2.4.5 | 3 replicas | By: jane.smith</div>
+                        </div>
+                        <div class="deployment-time">3 hours ago</div>
+                    </div>
+                    
+                    <div class="deployment-item">
+                        <div class="deployment-status status-yellow"></div>
+                        <div class="deployment-info">
+                            <div class="deployment-id">#1243 - develop - mno345j</div>
+                            <div class="deployment-details">Development | v2.5.0-alpha | 1 replica | By: dev-team</div>
+                        </div>
+                        <div class="deployment-time">5 hours ago</div>
+                    </div>
+                </div>
+
+                <h4 style="margin-top: 2rem;">Deployment Environments</h4>
+                <div class="services-grid" style="margin-top: 1rem;">
+                    <div class="service-card">
+                        <div class="service-name">🏭 Production</div>
+                        <div class="service-metrics">
+                            <div class="metric-item">
+                                <div class="metric-label">Version</div>
+                                <div class="metric-value">v2.4.7</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Replicas</div>
+                                <div class="metric-value">3/3</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Last Deploy</div>
+                                <div class="metric-value">2m ago</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Health</div>
+                                <div class="metric-value">100%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-name">🧪 Staging</div>
+                        <div class="service-metrics">
+                            <div class="metric-item">
+                                <div class="metric-label">Version</div>
+                                <div class="metric-value">v2.4.7-beta</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Replicas</div>
+                                <div class="metric-value">2/2</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Last Deploy</div>
+                                <div class="metric-value">15m ago</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Health</div>
+                                <div class="metric-value">100%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-name">💻 Development</div>
+                        <div class="service-metrics">
+                            <div class="metric-item">
+                                <div class="metric-label">Version</div>
+                                <div class="metric-value">v2.5.0-alpha</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Replicas</div>
+                                <div class="metric-value">1/1</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Last Deploy</div>
+                                <div class="metric-value">5h ago</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Health</div>
+                                <div class="metric-value">95%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Dashboard Page -->
+        <div id="health" class="page">
+            <h3>💚 System Health Overview</h3>
+            <div class="health-grid">
+                <div class="health-card">
+                    <div class="health-label">Overall Health</div>
+                    <div class="health-score health-excellent">98%</div>
+                    <div class="health-label">EXCELLENT</div>
+                </div>
+                
+                <div class="health-card">
+                    <div class="health-label">API Health</div>
+                    <div class="health-score health-excellent">99.99%</div>
+                    <div class="health-label">12ms avg response</div>
+                </div>
+                
+                <div class="health-card">
+                    <div class="health-label">Database Health</div>
+                    <div class="health-score health-good">97%</div>
+                    <div class="health-label">47/100 connections</div>
+                </div>
+                
+                <div class="health-card">
+                    <div class="health-label">Cache Health</div>
+                    <div class="health-score health-excellent">94.7%</div>
+                    <div class="health-label">Hit rate</div>
+                </div>
+                
+                <div class="health-card">
+                    <div class="health-label">Network Health</div>
+                    <div class="health-score health-excellent">99.97%</div>
+                    <div class="health-label">0.003% packet loss</div>
+                </div>
+                
+                <div class="health-card">
+                    <div class="health-label">Security Score</div>
+                    <div class="health-score health-excellent">100%</div>
+                    <div class="health-label">No vulnerabilities</div>
+                </div>
+            </div>
+
+            <div class="pipeline-container" style="margin-top: 2rem;">
+                <h4>Service Dependency Map</h4>
+                <div class="log-viewer">
+┌─────────────────┐
+│   CloudFlare    │
+└────────┬────────┘
+         │
+┌────────▼────────┐
+│   Nginx LB      │
+└────────┬────────┘
+         │
+   ┌─────┴─────┐
+   │           │
+┌──▼──┐     ┌──▼──┐
+│ API │     │ Web │
+└──┬──┘     └──┬──┘
+   │           │
+┌──▼───────────▼──┐
+│    Services     │
+├─────────────────┤
+│ • Auth Service  │
+│ • User Service  │
+│ • Data Service  │
+└──┬──────────┬───┘
+   │          │
+┌──▼──┐    ┌──▼──┐
+│Redis│    │ DB  │
+└─────┘    └─────┘
+                </div>
+            </div>
+        </div>
+
+        <!-- Monitoring Page -->
+        <div id="monitoring" class="page">
+            <h3>📈 Real-time Monitoring</h3>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-name">CPU Usage</div>
+                    <canvas id="cpu-chart" height="100"></canvas>
+                    <div class="metric-value" style="text-align: center; margin-top: 1rem;">47%</div>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-name">Memory Usage</div>
+                    <canvas id="memory-chart" height="100"></canvas>
+                    <div class="metric-value" style="text-align: center; margin-top: 1rem;">4.2/8 GB</div>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-name">Network I/O</div>
+                    <canvas id="network-chart" height="100"></canvas>
+                    <div class="metric-value" style="text-align: center; margin-top: 1rem;">847 Mb/s</div>
+                </div>
+            </div>
+
+            <div class="pipeline-container" style="margin-top: 2rem;">
+                <h4>Alert Rules</h4>
+                <div class="deployment-history">
+                    <div class="deployment-item">
+                        <div class="deployment-status status-green"></div>
+                        <div class="deployment-info">
+                            <div class="deployment-id">High CPU Usage</div>
+                            <div class="deployment-details">Alert when CPU > 80% for 5 minutes</div>
+                        </div>
+                        <div class="deployment-time">Active</div>
+                    </div>
+                    
+                    <div class="deployment-item">
+                        <div class="deployment-status status-green"></div>
+                        <div class="deployment-info">
+                            <div class="deployment-id">Memory Pressure</div>
+                            <div class="deployment-details">Alert when memory > 90%</div>
+                        </div>
+                        <div class="deployment-time">Active</div>
+                    </div>
+                    
+                    <div class="deployment-item">
+                        <div class="deployment-status status-yellow"></div>
+                        <div class="deployment-info">
+                            <div class="deployment-id">High Error Rate</div>
+                            <div class="deployment-details">Alert when error rate > 1%</div>
+                        </div>
+                        <div class="deployment-time">Triggered 2h ago</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Page -->
+        <div id="logs" class="page">
+            <h3>📝 Live System Logs</h3>
+            <div class="btn-group">
+                <button onclick="filterLogs('all')">All</button>
+                <button onclick="filterLogs('error')">Errors</button>
+                <button onclick="filterLogs('warning')">Warnings</button>
+                <button onclick="filterLogs('info')">Info</button>
+                <button onclick="clearLogs()">Clear</button>
+            </div>
+            
+            <div class="log-viewer" id="log-container">
+                <div class="log-entry log-info">[2025-09-26 10:47:23] INFO: API Gateway started on port 8887</div>
+                <div class="log-entry log-success">[2025-09-26 10:47:24] SUCCESS: Health check passed for all services</div>
+                <div class="log-entry log-info">[2025-09-26 10:47:25] INFO: Kubernetes pod app-5d7f8c9-x2j4 scaled successfully</div>
+                <div class="log-entry log-warning">[2025-09-26 10:47:26] WARNING: Cache hit rate below threshold: 87%</div>
+                <div class="log-entry log-info">[2025-09-26 10:47:27] INFO: Backup completed for PostgreSQL database</div>
+                <div class="log-entry log-success">[2025-09-26 10:47:28] SUCCESS: SSL certificate renewed for vandine.us</div>
+                <div class="log-entry log-info">[2025-09-26 10:47:29] INFO: Deployment #1247 started by CI/CD pipeline</div>
+                <div class="log-entry log-info">[2025-09-26 10:47:30] INFO: Docker image pushed to registry: app:abc123f</div>
+                <div class="log-entry log-success">[2025-09-26 10:47:31] SUCCESS: All tests passed (247/247)</div>
+                <div class="log-entry log-info">[2025-09-26 10:47:32] INFO: Security scan completed - no vulnerabilities found</div>
+                <div class="log-entry log-warning">[2025-09-26 10:47:33] WARNING: High memory usage on worker-3: 87%</div>
+                <div class="log-entry log-info">[2025-09-26 10:47:34] INFO: Auto-scaling triggered for service 'api-gateway'</div>
+                <div class="log-entry log-success">[2025-09-26 10:47:35] SUCCESS: Production deployment completed</div>
+                <div class="log-entry log-info">[2025-09-26 10:47:36] INFO: Prometheus scraping metrics from 23 targets</div>
+                <div class="log-entry log-error">[2025-09-26 10:47:37] ERROR: Connection timeout to external API (retrying...)</div>
+                <div class="log-entry log-success">[2025-09-26 10:47:38] SUCCESS: Connection restored after 1 retry</div>
+                <div class="log-entry log-info">[2025-09-26 10:47:39] INFO: Grafana dashboard updated with new metrics</div>
+                <div class="log-entry log-info">[2025-09-26 10:47:40] INFO: Redis cache flushed for key pattern 'session:*'</div>
+            </div>
+        </div>
+
+        <!-- Infrastructure Page -->
+        <div id="infrastructure" class="page">
+            <h3>🏗️ Infrastructure Overview</h3>
+            <div class="pipeline-container">
+                <div class="log-viewer">
+Infrastructure as Code (Terraform/Ansible):
+
+🏢 Cloud Providers:
+  ├── AWS (us-east-1, us-west-2)
+  ├── Google Cloud (us-central1)
+  └── Cloudflare (Global Edge)
+
+🖥️ On-Premise:
+  ├── Palo Alto PA-220 Firewall
+  ├── UniFi Dream Machine
+  └── Raspberry Pi Cluster (3 nodes)
+
+📦 Kubernetes Clusters:
+  ├── Production (3 masters, 5 workers)
+  ├── Staging (1 master, 2 workers)
+  └── Development (1 master, 1 worker)
+
+🗄️ Databases:
+  ├── PostgreSQL (Primary + 2 Replicas)
+  ├── MongoDB (3-node replica set)
+  ├── Redis (Master + 2 Slaves)
+  └── ElasticSearch (3-node cluster)
+
+🔄 CI/CD:
+  ├── GitLab CI
+  ├── ArgoCD
+  ├── Harbor Registry
+  └── SonarQube
+
+📊 Monitoring:
+  ├── Prometheus + Grafana
+  ├── ELK Stack
+  ├── Jaeger Tracing
+  └── PagerDuty
+
+🔒 Security:
+  ├── Vault (Secrets Management)
+  ├── Keycloak (Identity)
+  ├── Falco (Runtime Security)
+  └── OPA (Policy Engine)
+                </div>
+                
+                <div class="btn-group" style="margin-top: 1rem;">
+                    <button onclick="infraAction('terraform')">Terraform Plan</button>
+                    <button onclick="infraAction('ansible')">Run Playbook</button>
+                    <button onclick="infraAction('backup')">Backup All</button>
+                    <button onclick="infraAction('dr')">DR Failover</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Page switching
+        function switchPage(event, pageName) {
+            document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            document.getElementById(pageName).classList.add('active');
+        }
+
+        // Service actions
+        function serviceAction(service, action) {
+            alert();
+            // In production, this would make API calls
+        }
+
+        // Pipeline functions
+        function triggerPipeline(branch) {
+            alert();
+            animatePipeline();
+        }
+
+        function abortPipeline() {
+            if (confirm('Are you sure you want to abort the current pipeline?')) {
+                alert('Pipeline aborted');
+            }
+        }
+
+        function animatePipeline() {
+            const stages = ['source', 'build', 'test', 'security', 'deploy', 'verify'];
+            let currentStage = 0;
+            
+            const interval = setInterval(() => {
+                if (currentStage < stages.length) {
+                    const stage = document.getElementById();
+                    stage.classList.remove('active');
+                    stage.classList.add('success');
+                    
+                    if (currentStage < stages.length - 1) {
+                        const nextStage = document.getElementById();
+                        nextStage.classList.add('active');
+                    }
+                    
+                    currentStage++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 2000);
+        }
+
+        // Deployment actions
+        function deploymentAction(action) {
+            alert();
+        }
+
+        // Log functions
+        function filterLogs(level) {
+            const logs = document.querySelectorAll('.log-entry');
+            logs.forEach(log => {
+                if (level === 'all' || log.classList.contains()) {
+                    log.style.display = 'block';
+                } else {
+                    log.style.display = 'none';
+                }
+            });
+        }
+
+        function clearLogs() {
+            document.getElementById('log-container').innerHTML = '<div class="log-entry log-info">Logs cleared</div>';
+        }
+
+        // Infrastructure actions
+        function infraAction(action) {
+            const actions = {
+                'terraform': 'Running Terraform plan...',
+                'ansible': 'Executing Ansible playbook...',
+                'backup': 'Initiating full infrastructure backup...',
+                'dr': 'Starting disaster recovery failover...'
+            };
+            alert(actions[action] || 'Executing action...');
+        }
+
+        // Simulate real-time updates
+        function updateMetrics() {
+            // Update random metrics
+            document.querySelectorAll('.metric-value').forEach(metric => {
+                if (metric.textContent.includes('/')) return;
+                if (metric.textContent.includes('%')) {
+                    const current = parseInt(metric.textContent);
+                    const change = Math.random() * 10 - 5;
+                    metric.textContent = Math.max(0, Math.min(100, current + change)).toFixed(1) + '%';
+                }
+            });
+        }
+
+        // Add new log entries
+        function addLogEntry() {
+            const logTypes = ['info', 'success', 'warning', 'error'];
+            const messages = [
+                'Health check completed',
+                'Deployment successful',
+                'Cache cleared',
+                'Backup started',
+                'API request processed',
+                'Database query optimized',
+                'Security scan completed',
+                'Service scaled',
+                'Certificate renewed',
+                'Configuration updated'
+            ];
+            
+            const container = document.getElementById('log-container');
+            if (container) {
+                const type = logTypes[Math.floor(Math.random() * logTypes.length)];
+                const message = messages[Math.floor(Math.random() * messages.length)];
+                const time = new Date().toLocaleTimeString();
+                
+                const entry = document.createElement('div');
+                entry.className = ;
+                entry.textContent = ;
+                
+                container.insertBefore(entry, container.firstChild);
+                
+                // Remove old entries
+                while (container.children.length > 20) {
+                    container.removeChild(container.lastChild);
+                }
+            }
+        }
+
+        // Initialize
+        setInterval(updateMetrics, 5000);
+        setInterval(addLogEntry, 3000);
+    </script>
+</body>
+</html>

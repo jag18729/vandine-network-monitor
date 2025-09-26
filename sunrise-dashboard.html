@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vandine Network - The Homelab Story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        :root {
+            --sunrise-dark: #1a1a2e;
+            --sunrise-mid: #16213e;
+            --sunrise-light: #0f3460;
+            --sunrise-accent: #e94560;
+            --sunrise-gold: #f47340;
+            --sunrise-yellow: #fbbd23;
+            --sunrise-pink: #ff6b9d;
+            --sunrise-purple: #c44569;
+            --text-primary: #ffc93d;
+            --text-secondary: #f8b500;
+            --text-dim: #a0a0a0;
+            --success: #00d9ff;
+            --warning: #ffa502;
+            --danger: #ff6348;
+        }
+        
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, var(--sunrise-dark) 0%, var(--sunrise-mid) 40%, var(--sunrise-light) 70%, var(--sunrise-purple) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated sunrise background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at bottom, var(--sunrise-gold) 0%, transparent 70%);
+            opacity: 0.3;
+            animation: sunrise 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes sunrise {
+            0%, 100% { opacity: 0.2; transform: translateY(100px); }
+            50% { opacity: 0.5; transform: translateY(0); }
+        }
+        
+        /* Retro scan lines */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                transparent 50%,
+                rgba(255, 255, 255, 0.01) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Header with story */
+        header {
+            text-align: center;
+            padding: 3rem 0;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--sunrise-yellow), var(--sunrise-gold), var(--sunrise-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px rgba(251, 189, 35, 0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { filter: brightness(1); }
+            to { filter: brightness(1.2); }
+        }
+        
+        .story {
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            padding: 2rem;
+            background: rgba(22, 33, 62, 0.8);
+            border: 2px solid var(--sunrise-gold);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .story::before {
+            content: '⚡';
+            position: absolute;
+            top: -20px;
+            right: 20px;
+            font-size: 3rem;
+            opacity: 0.1;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .story h2 {
+            color: var(--sunrise-yellow);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .story p {
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        /* Tab navigation */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            padding: 0.5rem;
+            background: rgba(22, 33, 62, 0.6);
+            border-radius: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: rgba(233, 69, 96, 0.2);
+            border: 2px solid transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--sunrise-gold), transparent);
+            transition: left 0.5s;
+        }
+        
+        .tab:hover::before {
+            left: 100%;
+        }
+        
+        .tab:hover {
+            transform: translateY(-2px);
+            border-color: var(--sunrise-gold);
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, var(--sunrise-accent), var(--sunrise-purple));
+            color: white;
+            border-color: var(--sunrise-gold);
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+        }
+        
+        /* Content sections */
+        .content {
+            display: none;
+        }
+        
+        .content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Cards */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: rgba(22, 33, 62, 0.9);
+            border: 2px solid rgba(251, 189, 35, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--sunrise-gold), var(--sunrise-pink), var(--sunrise-purple), var(--sunrise-gold));
+            border-radius: 15px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s;
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        
+        @keyframes gradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .card:hover::before {
+            opacity: 1;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--sunrise-gold);
+            box-shadow: 0 10px 40px rgba(251, 189, 35, 0.2);
+        }
+        
+        .card h3 {
+            color: var(--sunrise-yellow);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        /* Status indicators */
+        .status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+        
+        .status.online {
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+        }
+        
+        .status.warning {
+            background: var(--warning);
+            box-shadow: 0 0 10px var(--warning);
+        }
+        
+        .status.offline {
+            background: var(--danger);
+            box-shadow: 0 0 10px var(--danger);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.6rem 1.2rem;
+            background: linear-gradient(135deg, var(--sunrise-accent), var(--sunrise-purple));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin: 0.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:active::after {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+        
+        .btn.secondary {
+            background: linear-gradient(135deg, var(--sunrise-gold), var(--sunrise-yellow));
+        }
+        
+        /* Service list */
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(15, 52, 96, 0.3);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+        }
+        
+        .service-item:hover {
+            background: rgba(15, 52, 96, 0.5);
+            transform: translateX(5px);
+        }
+        
+        /* Metrics */
+        .metric {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(15, 52, 96, 0.3);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .metric:hover {
+            background: rgba(15, 52, 96, 0.5);
+            transform: scale(1.05);
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--sunrise-gold);
+            text-shadow: 0 0 10px rgba(244, 115, 64, 0.5);
+        }
+        
+        .metric-label {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Terminal output */
+        .terminal {
+            background: #0a0a0a;
+            border: 2px solid var(--sunrise-gold);
+            border-radius: 10px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--success);
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        
+        .terminal::before {
+            content: '$ ';
+            color: var(--sunrise-gold);
+        }
+        
+        .terminal-output {
+            margin-top: 0.5rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .story { padding: 1rem; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Vandine Network Operations</h1>
+            <p style="color: var(--text-dim); font-size: 0.9rem;">[ Remote Site: Mom's House | Status: Fully Operational ]</p>
+        </header>
+        
+        <div class="story">
+            <h2>The Homelab That Started It All</h2>
+            <p>
+                Hey there! I'm Rafael, and this is my network operations center... running from my mom's house. 
+                Yeah, you read that right. While most people store old furniture in their parents' basement, 
+                I've turned it into a full-scale enterprise network lab.
+            </p>
+            <p>
+                It started innocently enough - "Mom, can I just put this little Raspberry Pi here to block ads?" 
+                Fast forward two years, and now there's a Palo Alto PA-220 firewall humming away next to her 
+                holiday decorations, a UniFi Dream Machine managing VLANs for the whole house, and a cluster of 
+                Raspberry Pis orchestrating containers like it's a Silicon Valley data center.
+            </p>
+            <p>
+                The best part? Mom gets ad-free browsing and I get to tell recruiters I manage a "geographically 
+                distributed edge computing infrastructure with zero-trust architecture." We both win! Plus, her 
+                internet is probably more secure than most Fortune 500 companies at this point.
+            </p>
+            <p style="color: var(--sunrise-gold); font-style: italic;">
+                Current achievement: 99.97% uptime (the 0.03% was when Mom accidentally unplugged it to vacuum)
+            </p>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('overview')">Overview</div>
+            <div class="tab" onclick="switchTab('services')">Services</div>
+            <div class="tab" onclick="switchTab('network')">Network</div>
+            <div class="tab" onclick="switchTab('cicd')">CI/CD</div>
+            <div class="tab" onclick="switchTab('security')">Security</div>
+            <div class="tab" onclick="switchTab('terminal')">Terminal</div>
+        </div>
+        
+        <!-- Overview Tab -->
+        <div class="content active" id="overview">
+            <div class="grid">
+                <div class="card">
+                    <h3>Quick Stats</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div class="metric">
+                            <div class="metric-value">99.97%</div>
+                            <div class="metric-label">Uptime</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">12ms</div>
+                            <div class="metric-label">Latency</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">847</div>
+                            <div class="metric-label">Mb/s</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">28.4k</div>
+                            <div class="metric-label">Ads Blocked</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Mom's House Infrastructure</h3>
+                    <div class="service-item">
+                        <span>Palo Alto PA-220 (Basement)</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>UniFi Dream Machine (Network Closet)</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>RPi Cluster (Behind the TV)</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>Mom's Laptop (Protected)</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn" onclick="showAlert('Rebooting all systems... Just kidding!')">Reboot All</button>
+                        <button class="btn secondary" onclick="showMetrics()">Live Metrics</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Latest Events</h3>
+                    <div class="terminal">
+                        <div>tail -f /var/log/home-ops.log</div>
+                        <div class="terminal-output">
+[10:47:23] Mom clicked on suspicious link - BLOCKED<br>
+[10:45:12] Automatic backup completed successfully<br>
+[10:43:07] Pi-hole blocked 1,247 ad requests<br>
+[10:41:33] Coffee maker joined IoT VLAN<br>
+[10:40:15] Cat walked on keyboard - no damage<br>
+[10:38:44] SSL certificates auto-renewed<br>
+[10:37:01] Mom asked "Is the internet working?" - Yes
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Services Tab -->
+        <div class="content" id="services">
+            <div class="grid">
+                <div class="card">
+                    <h3>Core Services</h3>
+                    <div class="service-item">
+                        <span>API Gateway</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>Kubernetes (K3s)</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>PostgreSQL</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>Redis Cache</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>Nginx</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>Docker Registry</span>
+                        <span class="status online"></span>
+                    </div>
+                    <button class="btn" onclick="restartService()">Restart Service</button>
+                    <button class="btn secondary" onclick="viewLogs()">View Logs</button>
+                </div>
+                
+                <div class="card">
+                    <h3>Monitoring Stack</h3>
+                    <div class="service-item">
+                        <span>Prometheus</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>Grafana</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>Elasticsearch</span>
+                        <span class="status warning"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>Kibana</span>
+                        <span class="status online"></span>
+                    </div>
+                    <button class="btn" onclick="openDashboard('grafana')">Open Grafana</button>
+                    <button class="btn secondary" onclick="openDashboard('kibana')">Open Kibana</button>
+                </div>
+                
+                <div class="card">
+                    <h3>Service Health</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem;">
+                        <div class="metric">
+                            <div class="metric-value">23/23</div>
+                            <div class="metric-label">Services Up</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">0.01%</div>
+                            <div class="metric-label">Error Rate</div>
+                        </div>
+                    </div>
+                    <div class="terminal" style="margin-top: 1rem;">
+                        <div>systemctl status all</div>
+                        <div class="terminal-output">All systems operational</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Network Tab -->
+        <div class="content" id="network">
+            <div class="grid">
+                <div class="card">
+                    <h3>Network Topology</h3>
+                    <div class="terminal">
+                        <div>show network map</div>
+                        <div class="terminal-output">
+Internet → Palo Alto PA-220<br>
+    ├── DMZ (VLAN 99)<br>
+    │   └── Public Services<br>
+    ├── Matrix Network (VLAN 2)<br>
+    │   ├── Workstations<br>
+    │   └── Development<br>
+    ├── IoT Network (VLAN 10)<br>
+    │   ├── Smart Devices<br>
+    │   └── Mom's Alexa<br>
+    └── Management (VLAN 1)<br>
+        ├── UniFi Controller<br>
+        └── Infrastructure
+                        </div>
+                    </div>
+                    <button class="btn" onclick="traceroute()">Traceroute</button>
+                    <button class="btn secondary" onclick="pingTest()">Ping Test</button>
+                </div>
+                
+                <div class="card">
+                    <h3>Firewall Rules</h3>
+                    <div class="service-item">
+                        <span>Ingress Rules: 147 Active</span>
+                        <span style="color: var(--success);">✓</span>
+                    </div>
+                    <div class="service-item">
+                        <span>Egress Rules: 89 Active</span>
+                        <span style="color: var(--success);">✓</span>
+                    </div>
+                    <div class="service-item">
+                        <span>NAT Rules: 12 Active</span>
+                        <span style="color: var(--success);">✓</span>
+                    </div>
+                    <div class="service-item">
+                        <span>Threats Blocked Today: 3,847</span>
+                        <span style="color: var(--sunrise-gold);">⚡</span>
+                    </div>
+                    <button class="btn" onclick="showFirewallLogs()">View Logs</button>
+                    <button class="btn secondary" onclick="updateRules()">Update Rules</button>
+                </div>
+                
+                <div class="card">
+                    <h3>DNS Statistics (Pi-hole)</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div class="metric">
+                            <div class="metric-value">28.4k</div>
+                            <div class="metric-label">Blocked Today</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">94.7%</div>
+                            <div class="metric-label">Cache Hit</div>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="openPihole()">Pi-hole Admin</button>
+                    <button class="btn secondary" onclick="flushDNS()">Flush Cache</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CI/CD Tab -->
+        <div class="content" id="cicd">
+            <div class="grid">
+                <div class="card">
+                    <h3>Pipeline Status</h3>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                        <span style="padding: 0.5rem 1rem; background: rgba(0, 217, 255, 0.2); border-radius: 20px;">✓ Source</span>
+                        <span style="padding: 0.5rem 1rem; background: rgba(0, 217, 255, 0.2); border-radius: 20px;">✓ Build</span>
+                        <span style="padding: 0.5rem 1rem; background: rgba(0, 217, 255, 0.2); border-radius: 20px;">✓ Test</span>
+                        <span style="padding: 0.5rem 1rem; background: rgba(255, 165, 2, 0.2); border-radius: 20px;">⟳ Deploy</span>
+                        <span style="padding: 0.5rem 1rem; background: rgba(100, 100, 100, 0.2); border-radius: 20px;">◯ Verify</span>
+                    </div>
+                    <button class="btn" onclick="deployToProd()">Deploy to Prod</button>
+                    <button class="btn secondary" onclick="deployToStaging()">Deploy to Staging</button>
+                </div>
+                
+                <div class="card">
+                    <h3>Git Worktrees</h3>
+                    <div class="terminal">
+                        <div>git worktree list</div>
+                        <div class="terminal-output">
+/home/johnmarston/vandine-network-monitor [feature/pihole]<br>
+/home/johnmarston/worktrees/main [main]<br>
+/home/johnmarston/worktrees/staging [staging]<br>
+/home/johnmarston/worktrees/hotfix [hotfix/security]
+                        </div>
+                    </div>
+                    <button class="btn" onclick="addWorktree()">Add Worktree</button>
+                    <button class="btn secondary" onclick="pruneWorktrees()">Prune</button>
+                </div>
+                
+                <div class="card">
+                    <h3>Recent Deployments</h3>
+                    <div class="service-item">
+                        <span>#1247 Production v2.4.7</span>
+                        <span style="color: var(--success);">2m ago</span>
+                    </div>
+                    <div class="service-item">
+                        <span>#1246 Staging v2.4.7-beta</span>
+                        <span style="color: var(--success);">15m ago</span>
+                    </div>
+                    <div class="service-item">
+                        <span>#1245 Development v2.5.0</span>
+                        <span style="color: var(--warning);">1h ago</span>
+                    </div>
+                    <button class="btn" onclick="rollback()">Rollback</button>
+                    <button class="btn secondary" onclick="viewHistory()">History</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Security Tab -->
+        <div class="content" id="security">
+            <div class="grid">
+                <div class="card">
+                    <h3>Zero Trust Status</h3>
+                    <div class="service-item">
+                        <span>Identity Verification</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>Device Trust</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>Micro-segmentation</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div class="service-item">
+                        <span>Continuous Auth</span>
+                        <span class="status online"></span>
+                    </div>
+                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(0, 217, 255, 0.1); border-radius: 8px;">
+                        <strong>Trust Score: 98.7%</strong>
+                    </div>
+                    <button class="btn" onclick="runSecurityScan()">Security Scan</button>
+                    <button class="btn secondary" onclick="viewThreats()">View Threats</button>
+                </div>
+                
+                <div class="card">
+                    <h3>Recent Security Events</h3>
+                    <div class="terminal">
+                        <div>tail -f /var/log/security.log</div>
+                        <div class="terminal-output">
+[BLOCKED] SQL injection attempt from X.X.x.x<br>
+[BLOCKED] Port scan detected from X.X.x.x<br>
+[ALLOWED] Mom logged in successfully<br>
+[BLOCKED] Malware domain request blocked<br>
+[INFO] SSL certificates renewed automatically
+                        </div>
+                    </div>
+                    <button class="btn" onclick="blockIP()">Block IP</button>
+                    <button class="btn secondary" onclick="viewFullLog()">Full Log</button>
+                </div>
+                
+                <div class="card">
+                    <h3>Threat Intelligence</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div class="metric">
+                            <div class="metric-value">15.8k</div>
+                            <div class="metric-label">Threats Blocked</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">342</div>
+                            <div class="metric-label">IPS Events</div>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="updateThreatDB()">Update DB</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Terminal Tab -->
+        <div class="content" id="terminal">
+            <div class="card" style="max-width: 100%;">
+                <h3>Remote Terminal</h3>
+                <div class="terminal" style="min-height: 400px;">
+                    <div>ssh johnmarston@X.X.2.7</div>
+                    <div class="terminal-output">
+Last login: Fri Sep 26 10:47:23 2025 from X.X.2.18<br><br>
+Welcome to Vandine Network Operations Center<br>
+Location: Mom's House (Basement Server Rack)<br>
+Uptime: 45 days, 12:23:45<br><br>
+                    </div>
+                    <div style="display: flex; align-items: center; margin-top: 1rem;">
+                        <span style="color: var(--sunrise-gold);">johnmarston@vandine:~$ </span>
+                        <input type="text" id="command-input" style="
+                            background: transparent;
+                            border: none;
+                            color: var(--text-secondary);
+                            font-family: 'JetBrains Mono', monospace;
+                            font-size: 0.85rem;
+                            flex: 1;
+                            outline: none;
+                            margin-left: 0.5rem;
+                        " placeholder="Type a command..." onkeypress="handleCommand(event)">
+                    </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button class="btn" onclick="runCommand('ls -la')">List Files</button>
+                    <button class="btn" onclick="runCommand('docker ps')">Docker Status</button>
+                    <button class="btn" onclick="runCommand('kubectl get pods')">K8s Pods</button>
+                    <button class="btn secondary" onclick="clearTerminal()">Clear</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Vandine Network - Proudly serving Mom's internet since 2023</p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem;">
+                Built with JetBrains Mono, sunrise gradients, and way too much coffee
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        // Tab switching with animation
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add some fun to tab switching
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSl+zPHaizsIGGS57OScTgwOTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTgwOTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTgwOTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTgwOTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTgwOTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSl+zPDaizsIGGS56+OcTg0NTKXh8L1pIQg2h9bxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg0NTKXh8L1pIgg1htbxy3ouBSh+zPDaizsIGGS56+OcTg==');
+        }
+        
+        // Alert function
+        function showAlert(message) {
+            alert(message);
+        }
+        
+        // Service functions
+        function restartService() {
+            showAlert('Service restart initiated... This usually takes 5-10 seconds.');
+        }
+        
+        function viewLogs() {
+            showAlert('Opening log viewer... Check the terminal tab for real-time logs.');
+        }
+        
+        function openDashboard(service) {
+            showAlert('Opening ' + service + ' dashboard in a new window...');
+            // In production: window.open('/dashboards/' + service, '_blank');
+        }
+        
+        // Network functions
+        function traceroute() {
+            showAlert('Running traceroute to 8.8.8.8...\n\n1. X.X.2.1 (1.2ms)\n2. X.X.0.1 (5.3ms)\n3. 8.8.8.8 (12.1ms)');
+        }
+        
+        function pingTest() {
+            showAlert('Ping test to google.com:\n\nPackets: Sent = 4, Received = 4, Lost = 0 (0% loss)\nAverage = 12ms');
+        }
+        
+        function showFirewallLogs() {
+            document.getElementById('terminal').classList.add('active');
+            document.getElementById('overview').classList.remove('active');
+            showAlert('Firewall logs displayed in terminal tab');
+        }
+        
+        function updateRules() {
+            showAlert('Firewall rules updated successfully. 3 new rules added, 1 rule modified.');
+        }
+        
+        function openPihole() {
+            showAlert('Opening Pi-hole admin panel...');
+            // In production: window.open('http://X.X.2.7/admin', '_blank');
+        }
+        
+        function flushDNS() {
+            showAlert('DNS cache flushed successfully. 124,523 entries cleared.');
+        }
+        
+        // CI/CD functions
+        function deployToProd() {
+            if (confirm('Deploy version 2.4.8 to production?')) {
+                showAlert('Deployment initiated...\n\nStep 1/5: Building Docker image...\nStep 2/5: Running tests...\nStep 3/5: Security scan...\nStep 4/5: Deploying...\nStep 5/5: Verifying...\n\nDeployment successful!');
+            }
+        }
+        
+        function deployToStaging() {
+            showAlert('Deploying to staging environment...\n\nDeployment #1248 started.');
+        }
+        
+        function addWorktree() {
+            const branch = prompt('Enter branch name:');
+            if (branch) {
+                showAlert('Worktree added: /home/johnmarston/worktrees/' + branch);
+            }
+        }
+        
+        function pruneWorktrees() {
+            showAlert('Pruned 2 stale worktrees.');
+        }
+        
+        function rollback() {
+            if (confirm('Rollback to version 2.4.6?')) {
+                showAlert('Rollback completed successfully.');
+            }
+        }
+        
+        function viewHistory() {
+            showAlert('Last 5 deployments:\n\n#1247 - v2.4.7 (current)\n#1246 - v2.4.6\n#1245 - v2.4.5\n#1244 - v2.4.4\n#1243 - v2.4.3');
+        }
+        
+        // Security functions
+        function runSecurityScan() {
+            showAlert('Running security scan...\n\nScanning: 23 services\nVulnerabilities found: 0\nSecurity score: 98.7%\n\nAll systems secure!');
+        }
+        
+        function viewThreats() {
+            showAlert('Threats in last 24h:\n\n• 3,847 Malware attempts\n• 1,234 Port scans\n• 567 SQL injections\n• 89 XSS attempts\n\nAll blocked successfully!');
+        }
+        
+        function blockIP() {
+            const ip = prompt('Enter IP to block:');
+            if (ip) {
+                showAlert('IP ' + ip + ' has been blocked.');
+            }
+        }
+        
+        function viewFullLog() {
+            document.getElementById('terminal').classList.add('active');
+            document.getElementById('security').classList.remove('active');
+        }
+        
+        function updateThreatDB() {
+            showAlert('Threat database updated.\n\n15,234 new signatures added.');
+        }
+        
+        // Terminal functions
+        function handleCommand(event) {
+            if (event.key === 'Enter') {
+                const input = document.getElementById('command-input');
+                runCommand(input.value);
+                input.value = '';
+            }
+        }
+        
+        function runCommand(cmd) {
+            const output = document.querySelector('.terminal-output');
+            const commands = {
+                'ls': 'api/  docker/  docs/  frontend/  scripts/  README.md',
+                'ls -la': 'total 48\ndrwxr-xr-x  8 john john 4096 Sep 26 10:47 .\ndrwxr-xr-x 15 john john 4096 Sep 26 10:45 ..\n-rw-r--r--  1 john john  234 Sep 26 10:47 README.md',
+                'pwd': '/home/johnmarston/vandine-network-monitor',
+                'docker ps': 'CONTAINER ID   IMAGE          STATUS    NAMES\nab3f4d5e6789   nginx:alpine   Up 2h     web-server\n1234567890ab   postgres:14    Up 45d    database',
+                'kubectl get pods': 'NAME                    READY   STATUS    AGE\napi-gateway-5d7f8c9     1/1     Running   2d\nweb-app-7f9c5d4         2/2     Running   5h',
+                'uptime': '10:48:32 up 45 days, 12:24,  3 users',
+                'whoami': 'johnmarston',
+                'date': new Date().toString(),
+                'clear': 'CLEAR'
+            };
+            
+            if (cmd === 'clear' || cmd === 'cls') {
+                clearTerminal();
+                return;
+            }
+            
+            const result = commands[cmd] || 'Command not found: ' + cmd;
+            output.innerHTML += '<br><span style="color: var(--sunrise-gold);">$ ' + cmd + '</span><br>' + result;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearTerminal() {
+            document.querySelector('.terminal-output').innerHTML = 'Terminal cleared.<br>';
+        }
+        
+        // Metrics function
+        function showMetrics() {
+            showAlert('Live Metrics:\n\nCPU: 47%\nMemory: 4.2/8 GB\nNetwork: 847 Mb/s\nDisk: 124/500 GB\n\nAll systems normal!');
+        }
+        
+        // Auto-update metrics
+        setInterval(() => {
+            // Update random metrics to simulate live data
+            const metrics = document.querySelectorAll('.metric-value');
+            metrics.forEach(metric => {
+                if (metric.textContent.includes('%')) {
+                    const current = parseFloat(metric.textContent);
+                    const change = (Math.random() - 0.5) * 5;
+                    const newValue = Math.max(0, Math.min(100, current + change));
+                    metric.textContent = newValue.toFixed(1) + '%';
+                }
+            });
+        }, 5000);
+        
+        // Add some console easter eggs
+        console.log('%c Welcome to Vandine Network Operations!', 'color: #fbbd23; font-size: 20px; font-weight: bold;');
+        console.log('%c Running from Mom\'s basement since 2023 🚀', 'color: #f47340; font-size: 14px;');
+        console.log('%c Type "help" for secret commands', 'color: #00d9ff; font-size: 12px;');
+    </script>
+</body>
+</html>

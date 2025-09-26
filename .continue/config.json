@@ -5,59 +5,105 @@
       "provider": "anthropic",
       "model": "claude-3-5-sonnet-20241022",
       "apiKey": ""
+    },
+    {
+      "title": "GPT-4",
+      "provider": "openai",
+      "model": "gpt-4-turbo-preview",
+      "apiKey": ""
     }
   ],
   "customCommands": [
     {
       "name": "test",
-      "description": "Run tests",
-      "command": "npm test"
+      "prompt": "Write a comprehensive test for this code",
+      "description": "Generate unit tests"
     },
     {
-      "name": "deploy",
-      "description": "Deploy to production",
-      "command": "./deploy.sh"
+      "name": "optimize",
+      "prompt": "Optimize this code for performance and resource usage",
+      "description": "Performance optimization"
+    },
+    {
+      "name": "security",
+      "prompt": "Review this code for security vulnerabilities and suggest improvements",
+      "description": "Security review"
+    },
+    {
+      "name": "network",
+      "prompt": "Add network engineering features like BBR, packet optimization, or WebSocket enhancements",
+      "description": "Network features"
     }
   ],
-  "tabAutocompleteModel": {
-    "title": "Starcoder",
-    "provider": "huggingface",
-    "model": "bigcode/starcoder"
-  },
   "contextProviders": [
     {
-      "name": "codebase",
-      "params": {
-        "include": ["**/*.py", "**/*.js", "**/*.html", "**/*.css"],
-        "exclude": ["**/node_modules", "**/.venv", "**/venv"]
-      }
+      "name": "code",
+      "params": {}
     },
     {
       "name": "docs",
-      "params": {
-        "include": ["**/*.md"]
-      }
+      "params": {}
+    },
+    {
+      "name": "terminal",
+      "params": {}
+    },
+    {
+      "name": "problems",
+      "params": {}
     }
   ],
   "slashCommands": [
     {
-      "name": "pihole-stats",
-      "description": "Get Pi-hole statistics",
-      "command": "curl -s http://192.168.2.7/admin/api.php?summaryRaw | jq"
+      "name": "edit",
+      "description": "Edit selected code"
     },
     {
-      "name": "check-services",
-      "description": "Check all service statuses",
-      "command": "docker-compose ps"
+      "name": "comment",
+      "description": "Add comments to code"
+    },
+    {
+      "name": "share",
+      "description": "Share code context"
+    },
+    {
+      "name": "cmd",
+      "description": "Generate shell command"
     }
   ],
-  "rules": [
-    "Focus on clean, maintainable code",
-    "Follow existing project patterns",
-    "Write comprehensive tests",
-    "Document all API endpoints",
-    "Use TypeScript for type safety where applicable",
-    "Implement proper error handling",
-    "Follow security best practices"
-  ]
+  "tabAutocompleteModel": {
+    "title": "Codestral",
+    "provider": "mistral",
+    "model": "codestral-latest",
+    "apiKey": ""
+  },
+  "embeddingsProvider": {
+    "provider": "openai",
+    "model": "text-embedding-3-small",
+    "apiKey": ""
+  },
+  "reranker": {
+    "name": "voyage",
+    "params": {
+      "apiKey": ""
+    }
+  },
+  "experimental": {
+    "modelContextProtocolServers": [
+      {
+        "transport": {
+          "type": "stdio",
+          "command": "npx",
+          "args": ["@modelcontextprotocol/server-github"]
+        }
+      },
+      {
+        "transport": {
+          "type": "stdio",
+          "command": "python",
+          "args": ["-m", "mcp_server_pihole"]
+        }
+      }
+    ]
+  }
 }

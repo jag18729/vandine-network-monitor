@@ -1,0 +1,17 @@
+{
+  "projectType": "fullstack",
+  "languages": ["python", "javascript", "html", "css"],
+  "frameworks": ["fastapi", "express", "nginx"],
+  "features": [
+    "network-engineering",
+    "pi-hole-integration",
+    "websocket-optimization",
+    "bbr-congestion-control",
+    "mcp-servers"
+  ],
+  "preferredModels": {
+    "code": "claude-3-5-sonnet",
+    "chat": "gpt-4-turbo",
+    "autocomplete": "codestral"
+  }
+}

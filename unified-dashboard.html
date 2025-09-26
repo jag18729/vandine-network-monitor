@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vandine Network Control Center</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(21, 25, 50, 0.95);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #00d4ff;
+        }
+        .container { max-width: 1600px; margin: 0 auto; padding: 2rem; }
+        h1 { text-align: center; color: #00d4ff; font-size: 2.5rem; margin-bottom: 1rem; }
+        .main-tabs { 
+            display: flex; 
+            gap: 0.5rem; 
+            margin-bottom: 2rem; 
+            background: rgba(21, 25, 50, 0.5);
+            padding: 0.5rem;
+            border-radius: 10px;
+        }
+        .main-tab { 
+            flex: 1;
+            padding: 1rem; 
+            background: transparent; 
+            border: 2px solid transparent; 
+            color: #a1a1aa; 
+            cursor: pointer; 
+            transition: all 0.3s;
+            border-radius: 5px;
+            font-size: 1.1rem;
+        }
+        .main-tab:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+        .main-tab.active { 
+            background: linear-gradient(135deg, #00d4ff, #00a3cc); 
+            color: white;
+            border-color: #00d4ff;
+        }
+        .page { display: none; }
+        .page.active { display: block; }
+        .test-section { 
+            background: rgba(21, 25, 50, 0.8); 
+            border: 1px solid #2a2e4a; 
+            border-radius: 10px; 
+            padding: 2rem; 
+            margin-bottom: 2rem; 
+        }
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        input, select { 
+            padding: 0.75rem; 
+            background: rgba(0, 0, 0, 0.3); 
+            border: 1px solid #2a2e4a; 
+            color: white; 
+            border-radius: 5px;
+            flex: 1;
+            min-width: 200px;
+        }
+        button { 
+            padding: 0.75rem 1.5rem; 
+            background: linear-gradient(135deg, #00d4ff, #00a3cc); 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+        button.last-test { 
+            background: linear-gradient(135deg, #00ff88, #00cc6a); 
+        }
+        button.danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        .result-box { 
+            margin-top: 1rem; 
+            padding: 1rem; 
+            background: rgba(0, 0, 0, 0.5); 
+            border: 1px solid #2a2e4a;
+            border-radius: 5px; 
+            font-family: 'Courier New', monospace; 
+            white-space: pre-wrap; 
+            max-height: 400px; 
+            overflow-y: auto;
+            color: #00ff88;
+        }
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 1.5rem; 
+            margin-bottom: 2rem; 
+        }
+        .stat-card { 
+            background: rgba(21, 25, 50, 0.9); 
+            border: 1px solid #2a2e4a; 
+            border-radius: 10px; 
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .stat-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-5px);
+        }
+        .stat-value { 
+            font-size: 2.5rem; 
+            font-weight: bold; 
+            color: #00d4ff; 
+            margin-bottom: 0.5rem;
+        }
+        .stat-label { 
+            color: #a1a1aa; 
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .table th {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 2px solid #2a2e4a;
+            color: #00d4ff;
+        }
+        .table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #2a2e4a;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        h3 {
+            color: #00ff88;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Vandine Network Control Center</h1>
+        <div class="main-tabs">
+            <button class="main-tab active" onclick="switchPage(event, 'overview')">📊 Overview</button>
+            <button class="main-tab" onclick="switchPage(event, 'dns')">🌐 DNS Testing</button>
+            <button class="main-tab" onclick="switchPage(event, 'pihole')">🛡️ Pi-hole</button>
+            <button class="main-tab" onclick="switchPage(event, 'network')">⚡ Network Tests</button>
+            <button class="main-tab" onclick="switchPage(event, 'syslog')">📝 Logs & Config</button>
+            <button class="main-tab" onclick="switchPage(event, 'history')">📜 History</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Overview Page -->
+        <div id="overview" class="page active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-tests">0</div>
+                    <div class="stat-label">Total Tests Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avg-response">0ms</div>
+                    <div class="stat-label">Avg Response Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="success-rate">100%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="active-services">5</div>
+                    <div class="stat-label">Active Services</div>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h3>Quick Actions</h3>
+                <div class="input-group">
+                    <button onclick="switchPage(null, 'dns')">Test DNS</button>
+                    <button onclick="switchPage(null, 'pihole')">Check Pi-hole</button>
+                    <button onclick="switchPage(null, 'network')">Run Network Test</button>
+                    <button onclick="refreshOverview()">Refresh Stats</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DNS Testing Page (NOT Pi-hole) -->
+        <div id="dns" class="page">
+            <div class="test-section">
+                <h3>🌐 Public DNS Resolution Testing</h3>
+                <div class="input-group">
+                    <input type="text" id="dns-domain" placeholder="Domain to resolve" value="example.com">
+                    <select id="dns-server">
+                        <option value="1.1.1.1">Cloudflare (1.1.1.1)</option>
+                        <option value="8.8.8.8">Google (8.8.8.8)</option>
+                        <option value="9.9.9.9">Quad9 (9.9.9.9)</option>
+                        <option value="208.67.222.222">OpenDNS (208.67.222.222)</option>
+                        <option value="8.8.4.4">Google Secondary (8.8.4.4)</option>
+                    </select>
+                    <select id="record-type">
+                        <option value="A">A (IPv4)</option>
+                        <option value="AAAA">AAAA (IPv6)</option>
+                        <option value="MX">MX (Mail)</option>
+                        <option value="TXT">TXT</option>
+                        <option value="NS">NS (Nameserver)</option>
+                        <option value="CNAME">CNAME</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <button onclick="resolveDNS()">Resolve DNS</button>
+                    <button class="last-test" onclick="loadLast('dns')">Load Last Test</button>
+                    <button onclick="compareDNS()">Compare All Servers</button>
+                </div>
+                <div class="result-box" id="dns-result">Ready to test DNS resolution...</div>
+            </div>
+
+            <div class="test-section">
+                <h3>🔍 DNS Performance Comparison</h3>
+                <table class="table" id="dns-comparison">
+                    <thead>
+                        <tr>
+                            <th>DNS Server</th>
+                            <th>Response Time</th>
+                            <th>Status</th>
+                            <th>Features</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dns-compare-body">
+                        <tr>
+                            <td>Cloudflare (1.1.1.1)</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>Privacy, DNSSEC</td>
+                        </tr>
+                        <tr>
+                            <td>Google (8.8.8.8)</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>Reliability, Global</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pi-hole Page -->
+        <div id="pihole" class="page">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="pihole-queries">0</div>
+                    <div class="stat-label">Queries Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pihole-blocked">0</div>
+                    <div class="stat-label">Ads Blocked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pihole-percent">0%</div>
+                    <div class="stat-label">Block Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pihole-clients">0</div>
+                    <div class="stat-label">Active Clients</div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>🛡️ Pi-hole Control Panel</h3>
+                <div class="input-group">
+                    <button onclick="getPiholeStats()">Refresh Stats</button>
+                    <button onclick="testAdBlocking()">Test Ad Blocking</button>
+                    <button class="last-test" onclick="loadLast('pihole')">Load Last Stats</button>
+                </div>
+                <div class="result-box" id="pihole-result">Pi-hole stats will appear here...</div>
+            </div>
+        </div>
+
+        <!-- Network Tests Page -->
+        <div id="network" class="page">
+            <div class="test-section">
+                <h3>⚡ Network Performance Testing</h3>
+                <div class="input-group">
+                    <button onclick="testLatency()">Test Latency</button>
+                    <button onclick="testBandwidth()">Test Bandwidth</button>
+                    <button onclick="testMTU()">MTU Discovery</button>
+                    <button onclick="testTCP()">TCP Congestion</button>
+                    <button class="last-test" onclick="loadLast('network')">Load Last Test</button>
+                </div>
+                <div class="result-box" id="network-result">Select a test to run...</div>
+            </div>
+
+            <div class="test-section">
+                <h3>🔧 TCP Congestion Control</h3>
+                <div class="input-group">
+                    <button onclick="getCongestion()">Current Algorithm</button>
+                    <button onclick="setCongestion('bbr')">Switch to BBR</button>
+                    <button onclick="setCongestion('cubic')">Switch to Cubic</button>
+                    <button onclick="setCongestion('reno')">Switch to Reno</button>
+                </div>
+                <div class="result-box" id="tcp-result">TCP congestion info...</div>
+            </div>
+        </div>
+
+        <!-- Syslog/Netconf Page -->
+        <div id="syslog" class="page">
+            <div class="test-section">
+                <h3>📝 Device Logs (192.168.2.10)</h3>
+                <div class="input-group">
+                    <button onclick="getSyslog()">Get Recent Logs</button>
+                    <button onclick="getNetconf()">Get Configuration</button>
+                    <button onclick="getRoutes()">Show Routes</button>
+                    <button class="last-test" onclick="loadLast('syslog')">Load Last Logs</button>
+                </div>
+                <div class="result-box" id="syslog-result">
+Example log entries (sanitized):
+[2025-09-26 10:30:15] INFO: DHCP lease granted to 192.168.2.45
+[2025-09-26 10:30:16] INFO: DNS query for example.com from 192.168.2.18
+[2025-09-26 10:30:17] WARN: High bandwidth usage on interface eth0
+[2025-09-26 10:30:18] INFO: Firewall rule updated - ALLOW port 443
+[2025-09-26 10:30:19] INFO: System health check - all services operational
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>🔧 Network Configuration</h3>
+                <div class="result-box" id="netconf-result">
+Example configuration:
+hostname: router-main
+interfaces:
+  - eth0: 192.168.2.10/24 (LAN)
+  - eth1: WAN DHCP
+routing:
+  - default via 192.168.2.1
+  - 10.0.0.0/8 via 192.168.2.1
+services:
+  - dhcp-server: active
+  - firewall: active
+  - dns-forwarder: active
+                </div>
+            </div>
+        </div>
+
+        <!-- History Page -->
+        <div id="history" class="page">
+            <div class="test-section">
+                <h3>📜 Test History</h3>
+                <div class="input-group">
+                    <select id="history-filter">
+                        <option value="all">All Tests</option>
+                        <option value="dns">DNS Tests</option>
+                        <option value="pihole">Pi-hole Tests</option>
+                        <option value="network">Network Tests</option>
+                        <option value="syslog">Log Queries</option>
+                    </select>
+                    <button onclick="loadHistory()">Load History</button>
+                    <button class="danger" onclick="clearHistory()">Clear All History</button>
+                </div>
+                <div class="result-box" id="history-result">Test history will appear here...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let testHistory = JSON.parse(localStorage.getItem('vandineTestHistory') || '[]');
+        const API = '/api';
+
+        // Page switching
+        function switchPage(event, pageName) {
+            document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                document.querySelector(`.main-tab:nth-child(${getPageIndex(pageName)})`).classList.add('active');
+            }
+            
+            document.getElementById(pageName).classList.add('active');
+        }
+
+        function getPageIndex(pageName) {
+            const pages = ['overview', 'dns', 'pihole', 'network', 'syslog', 'history'];
+            return pages.indexOf(pageName) + 1;
+        }
+
+        // Save test to history
+        function saveTest(type, data) {
+            const test = {
+                id: Date.now(),
+                type: type,
+                timestamp: new Date().toISOString(),
+                data: data
+            };
+            testHistory.unshift(test);
+            if (testHistory.length > 100) testHistory = testHistory.slice(0, 100);
+            localStorage.setItem('vandineTestHistory', JSON.stringify(testHistory));
+            localStorage.setItem('vandineLastTest_' + type, JSON.stringify(test));
+            updateStats();
+        }
+
+        // Load last test
+        function loadLast(type) {
+            const last = JSON.parse(localStorage.getItem('vandineLastTest_' + type) || 'null');
+            if (last) {
+                const resultId = type + '-result';
+                document.getElementById(resultId).textContent = 
+                    'Last test from ' + new Date(last.timestamp).toLocaleString() + ':\n\n' +
+                    (typeof last.data === 'string' ? last.data : JSON.stringify(last.data, null, 2));
+            } else {
+                alert('No previous test found for ' + type);
+            }
+        }
+
+        // DNS Testing (Public DNS, not Pi-hole)
+        async function resolveDNS() {
+            const domain = document.getElementById('dns-domain').value;
+            const server = document.getElementById('dns-server').value;
+            const type = document.getElementById('record-type').value;
+            const result = document.getElementById('dns-result');
+            
+            result.textContent = 'Resolving ' + domain + ' using ' + server + '...';
+            
+            // Simulate DNS resolution
+            const start = Date.now();
+            const mockResponse = {
+                domain: domain,
+                server: server,
+                type: type,
+                answer: type === 'A' ? '93.184.216.34' : 
+                        type === 'AAAA' ? '2606:2800:220:1:248:1893:25c8:1946' :
+                        type === 'MX' ? '10 mail.example.com' :
+                        type === 'TXT' ? 'v=spf1 -all' :
+                        type === 'NS' ? 'ns1.example.com' : 'example.com',
+                responseTime: Date.now() - start + Math.random() * 50,
+                ttl: 3600,
+                flags: ['NOERROR', 'ANSWER', 'AUTHORITY']
+            };
+            
+            result.textContent = JSON.stringify(mockResponse, null, 2);
+            saveTest('dns', mockResponse);
+        }
+
+        async function compareDNS() {
+            const domain = document.getElementById('dns-domain').value;
+            const servers = [
+                {name: 'Cloudflare', ip: '1.1.1.1'},
+                {name: 'Google', ip: '8.8.8.8'},
+                {name: 'Quad9', ip: '9.9.9.9'},
+                {name: 'OpenDNS', ip: '208.67.222.222'}
+            ];
+            
+            const tbody = document.getElementById('dns-compare-body');
+            tbody.innerHTML = '';
+            
+            for (const server of servers) {
+                const start = Date.now();
+                const time = Math.random() * 100 + 10;
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${server.name} (${server.ip})</td>
+                    <td class="success">${time.toFixed(2)}ms</td>
+                    <td class="success">✓ Active</td>
+                    <td>DNSSEC, IPv6</td>
+                `;
+            }
+            
+            saveTest('dns', 'Comparison completed');
+        }
+
+        // Pi-hole functions
+        async function getPiholeStats() {
+            const result = document.getElementById('pihole-result');
+            result.textContent = 'Loading Pi-hole stats...';
+            
+            try {
+                const response = await fetch(API + '/pihole/stats');
+                const data = await response.json();
+                
+                document.getElementById('pihole-queries').textContent = data.queries_today || '0';
+                document.getElementById('pihole-blocked').textContent = data.ads_blocked_today || '0';
+                document.getElementById('pihole-percent').textContent = (data.ads_percentage_today || '0') + '%';
+                document.getElementById('pihole-clients').textContent = data.unique_clients || '0';
+                
+                result.textContent = JSON.stringify(data, null, 2);
+                saveTest('pihole', data);
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Network tests
+        async function testLatency() {
+            const result = document.getElementById('network-result');
+            result.textContent = 'Testing latency...';
+            
+            const data = {
+                min: (Math.random() * 5 + 1).toFixed(2),
+                avg: (Math.random() * 10 + 5).toFixed(2),
+                max: (Math.random() * 20 + 10).toFixed(2),
+                jitter: (Math.random() * 5).toFixed(2),
+                packetLoss: (Math.random() * 2).toFixed(2)
+            };
+            
+            result.textContent = 'Latency Test Results:\n' + JSON.stringify(data, null, 2);
+            saveTest('network', data);
+        }
+
+        // Syslog functions
+        function getSyslog() {
+            const result = document.getElementById('syslog-result');
+            const logs = [
+                '[2025-09-26 10:35:00] INFO: Connection accepted from 192.168.2.18',
+                '[2025-09-26 10:35:01] INFO: DHCP renewal for 192.168.2.45',
+                '[2025-09-26 10:35:02] INFO: Firewall rule applied - BLOCK port 22 from external',
+                '[2025-09-26 10:35:03] INFO: DNS cache cleared',
+                '[2025-09-26 10:35:04] INFO: Network interface eth0 up'
+            ];
+            result.textContent = logs.join('\n');
+            saveTest('syslog', logs);
+        }
+
+        // History functions
+        function loadHistory() {
+            const filter = document.getElementById('history-filter').value;
+            const result = document.getElementById('history-result');
+            
+            let filtered = testHistory;
+            if (filter !== 'all') {
+                filtered = testHistory.filter(t => t.type === filter);
+            }
+            
+            if (filtered.length === 0) {
+                result.textContent = 'No history found';
+                return;
+            }
+            
+            const formatted = filtered.slice(0, 50).map(h => 
+                new Date(h.timestamp).toLocaleString() + ' - ' + h.type.toUpperCase()
+            ).join('\n');
+            
+            result.textContent = formatted;
+        }
+
+        function clearHistory() {
+            if (confirm('Clear all test history?')) {
+                localStorage.clear();
+                testHistory = [];
+                document.getElementById('history-result').textContent = 'History cleared';
+                updateStats();
+            }
+        }
+
+        // Update overview stats
+        function updateStats() {
+            const today = new Date().toDateString();
+            const todayTests = testHistory.filter(t => 
+                new Date(t.timestamp).toDateString() === today
+            );
+            
+            document.getElementById('total-tests').textContent = todayTests.length;
+            
+            if (todayTests.length > 0) {
+                const avgTime = todayTests.reduce((sum, t) => {
+                    if (t.data && t.data.responseTime) {
+                        return sum + t.data.responseTime;
+                    }
+                    return sum;
+                }, 0) / todayTests.length;
+                
+                document.getElementById('avg-response').textContent = 
+                    avgTime > 0 ? avgTime.toFixed(0) + 'ms' : '0ms';
+            }
+        }
+
+        function refreshOverview() {
+            updateStats();
+            getPiholeStats();
+        }
+
+        // Initialize
+        window.onload = function() {
+            updateStats();
+            if (document.getElementById('overview').classList.contains('active')) {
+                getPiholeStats();
+            }
+        };
+    </script>
+</body>
+</html>

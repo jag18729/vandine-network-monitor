@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vandine Network Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        h1 { text-align: center; color: #00d4ff; font-size: 2.5rem; margin-bottom: 2rem; }
+        .tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid #2a2e4a; }
+        .tab { padding: 1rem 2rem; background: rgba(21, 25, 50, 0.5); border: none; color: #a1a1aa; cursor: pointer; }
+        .tab.active { background: linear-gradient(135deg, #00d4ff, #00a3cc); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .test-section { background: rgba(21, 25, 50, 0.8); border: 1px solid #2a2e4a; border-radius: 10px; padding: 2rem; margin-bottom: 2rem; }
+        button { padding: 0.75rem 2rem; background: linear-gradient(135deg, #00d4ff, #00a3cc); color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button.last-test { background: linear-gradient(135deg, #00ff88, #00cc6a); }
+        .result-box { margin-top: 1rem; padding: 1rem; background: rgba(0, 0, 0, 0.3); border-radius: 5px; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+        input { padding: 0.75rem; background: rgba(0, 0, 0, 0.3); border: 1px solid #2a2e4a; color: white; border-radius: 5px; margin-right: 1rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: rgba(21, 25, 50, 0.8); border: 1px solid #2a2e4a; border-radius: 10px; padding: 1.5rem; }
+        .stat-value { font-size: 2rem; font-weight: bold; color: #00d4ff; }
+        .stat-label { color: #a1a1aa; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Network Analytics Dashboard</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(event, 'dns')">DNS Resolver</button>
+            <button class="tab" onclick="switchTab(event, 'pihole')">Pi-hole Stats</button>
+            <button class="tab" onclick="switchTab(event, 'syslog')">Syslog/Netconf</button>
+            <button class="tab" onclick="switchTab(event, 'history')">Test History</button>
+        </div>
+
+        <!-- DNS Tab -->
+        <div id="dns" class="tab-content active">
+            <div class="test-section">
+                <h3>DNS Resolution Testing</h3>
+                <input type="text" id="domain" placeholder="Enter domain" value="google.com">
+                <button onclick="resolveDNS()">Resolve</button>
+                <button class="last-test" onclick="loadLastDNS()">Last Test</button>
+                <div class="result-box" id="dns-result"></div>
+            </div>
+            
+            <div class="test-section">
+                <h3>DNS Benchmarks</h3>
+                <button onclick="benchmarkDNS()">Compare DNS Servers</button>
+                <div class="result-box" id="benchmark-result"></div>
+            </div>
+        </div>
+
+        <!-- Pi-hole Tab -->
+        <div id="pihole" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="queries-today">0</div>
+                    <div class="stat-label">Queries Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="blocked-today">0</div>
+                    <div class="stat-label">Blocked Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="block-rate">0%</div>
+                    <div class="stat-label">Block Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="clients">0</div>
+                    <div class="stat-label">Active Clients</div>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h3>Pi-hole Control</h3>
+                <button onclick="getPiholeStats()">Refresh Stats</button>
+                <button class="last-test" onclick="loadLastPihole()">Last Stats</button>
+                <div class="result-box" id="pihole-result"></div>
+            </div>
+        </div>
+
+        <!-- Syslog/Netconf Tab -->
+        <div id="syslog" class="tab-content">
+            <div class="test-section">
+                <h3>Network Device Logs (192.168.2.10)</h3>
+                <button onclick="getSyslog()">Get Recent Logs</button>
+                <button onclick="getNetconf()">Get Config</button>
+                <button class="last-test" onclick="loadLastSyslog()">Last Logs</button>
+                <div class="result-box" id="syslog-result"></div>
+            </div>
+            
+            <div class="test-section">
+                <h3>Example Log Entries</h3>
+                <div class="result-box">
+Sep 26 10:15:23 router kernel: [UFW BLOCK] IN=eth0 OUT= SRC=45.142.120.5 DST=192.168.2.10 PROTO=TCP DPT=22
+Sep 26 10:15:24 router systemd[1]: Started Network Time Synchronization
+Sep 26 10:15:25 router dhcpd: DHCPREQUEST for 192.168.2.45 from aa:bb:cc:dd:ee:ff via eth1
+Sep 26 10:15:26 router kernel: [ALLOW] IN=eth1 OUT=eth0 SRC=192.168.2.18 DST=8.8.8.8 PROTO=UDP DPT=53
+Sep 26 10:15:27 router sshd[1234]: Connection closed by 192.168.2.7 port 54321
+                </div>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history" class="tab-content">
+            <div class="test-section">
+                <h3>Test History</h3>
+                <button onclick="loadHistory()">Load History</button>
+                <button onclick="clearHistory()">Clear History</button>
+                <div class="result-box" id="history-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = '/api';
+        let testHistory = JSON.parse(localStorage.getItem('testHistory') || '[]');
+
+        function switchTab(event, tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function saveTest(type, data) {
+            const test = {
+                type: type,
+                timestamp: new Date().toISOString(),
+                data: data
+            };
+            testHistory.unshift(test);
+            if (testHistory.length > 100) testHistory = testHistory.slice(0, 100);
+            localStorage.setItem('testHistory', JSON.stringify(testHistory));
+            localStorage.setItem('last_' + type, JSON.stringify(test));
+        }
+
+        async function resolveDNS() {
+            const domain = document.getElementById('domain').value;
+            const result = document.getElementById('dns-result');
+            result.textContent = 'Resolving...';
+            
+            try {
+                const response = await fetch(API + '/dns/resolve?domain=' + domain);
+                const data = await response.json();
+                result.textContent = JSON.stringify(data, null, 2);
+                saveTest('dns', data);
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function benchmarkDNS() {
+            const result = document.getElementById('benchmark-result');
+            result.textContent = 'Testing DNS servers...';
+            
+            const servers = [
+                {name: 'Pi-hole', ip: '192.168.2.7'},
+                {name: 'Cloudflare', ip: '1.1.1.1'},
+                {name: 'Google', ip: '8.8.8.8'}
+            ];
+            
+            let results = [];
+            for (const server of servers) {
+                const start = Date.now();
+                try {
+                    await fetch(API + '/dns/test?server=' + server.ip);
+                    const time = Date.now() - start;
+                    results.push(server.name + ': ' + time + 'ms');
+                } catch (e) {
+                    results.push(server.name + ': Failed');
+                }
+            }
+            
+            result.textContent = results.join('\n');
+            saveTest('benchmark', results);
+        }
+
+        async function getPiholeStats() {
+            const result = document.getElementById('pihole-result');
+            result.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch(API + '/pihole/stats');
+                const data = await response.json();
+                
+                document.getElementById('queries-today').textContent = data.queries_today || '0';
+                document.getElementById('blocked-today').textContent = data.ads_blocked_today || '0';
+                document.getElementById('block-rate').textContent = (data.ads_percentage_today || '0') + '%';
+                document.getElementById('clients').textContent = data.unique_clients || '0';
+                
+                result.textContent = JSON.stringify(data, null, 2);
+                saveTest('pihole', data);
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function getSyslog() {
+            const result = document.getElementById('syslog-result');
+            result.textContent = 'Fetching logs from 192.168.2.10...';
+            
+            // Simulated example data - replace with actual API call
+            const exampleLogs = [
+                'Sep 26 10:20:01 device kernel: [UFW BLOCK] SRC=external DST=192.168.2.10',
+                'Sep 26 10:20:02 device systemd: Network service started',
+                'Sep 26 10:20:03 device dhcpd: DHCPACK to 192.168.2.45',
+                'Sep 26 10:20:04 device sshd: Accepted connection from 192.168.2.7',
+                'Sep 26 10:20:05 device kernel: Firewall rule applied'
+            ];
+            
+            result.textContent = exampleLogs.join('\n');
+            saveTest('syslog', exampleLogs);
+        }
+
+        async function getNetconf() {
+            const result = document.getElementById('syslog-result');
+            result.textContent = 'Getting network config...';
+            
+            // Example netconf data
+            const config = {
+                hostname: 'router-2-10',
+                interfaces: ['eth0: 192.168.2.10/24', 'eth1: 10.0.0.1/24'],
+                routes: ['default via 192.168.2.1', '10.0.0.0/24 dev eth1'],
+                services: ['sshd', 'dhcpd', 'firewall']
+            };
+            
+            result.textContent = JSON.stringify(config, null, 2);
+            saveTest('netconf', config);
+        }
+
+        function loadLastDNS() {
+            const last = JSON.parse(localStorage.getItem('last_dns') || 'null');
+            if (last) {
+                document.getElementById('dns-result').textContent = JSON.stringify(last.data, null, 2);
+            }
+        }
+
+        function loadLastPihole() {
+            const last = JSON.parse(localStorage.getItem('last_pihole') || 'null');
+            if (last) {
+                document.getElementById('pihole-result').textContent = JSON.stringify(last.data, null, 2);
+            }
+        }
+
+        function loadLastSyslog() {
+            const last = JSON.parse(localStorage.getItem('last_syslog') || 'null');
+            if (last) {
+                document.getElementById('syslog-result').textContent = 
+                    Array.isArray(last.data) ? last.data.join('\n') : JSON.stringify(last.data, null, 2);
+            }
+        }
+
+        function loadHistory() {
+            const result = document.getElementById('history-result');
+            const history = JSON.parse(localStorage.getItem('testHistory') || '[]');
+            
+            if (history.length === 0) {
+                result.textContent = 'No history available';
+                return;
+            }
+            
+            const formatted = history.slice(0, 20).map(h => 
+                h.timestamp + ' - ' + h.type.toUpperCase()
+            ).join('\n');
+            
+            result.textContent = formatted;
+        }
+
+        function clearHistory() {
+            localStorage.clear();
+            testHistory = [];
+            document.getElementById('history-result').textContent = 'History cleared';
+        }
+
+        // Auto-load Pi-hole stats on page load
+        window.onload = function() {
+            getPiholeStats();
+        };
+    </script>
+</body>
+</html>

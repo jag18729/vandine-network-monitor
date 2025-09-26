@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vandine DevOps Control Center</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
+        }
+        .container { max-width: 1900px; margin: 0 auto; padding: 2rem; }
+        h1 { text-align: center; color: #00d4ff; font-size: 2.5rem; margin-bottom: 2rem; }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: rgba(21, 25, 50, 0.9);
+            border: 2px solid #2a2e4a;
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+        
+        .card h3 {
+            color: #00ff88;
+            margin-bottom: 1rem;
+        }
+        
+        .service-status {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .status-green { background: #10b981; }
+        .status-yellow { background: #f59e0b; }
+        .status-red { background: #ef4444; }
+        
+        .pipeline-stage {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid #00d4ff;
+            border-radius: 20px;
+        }
+        
+        .worktree-item {
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid #00d4ff;
+            margin-bottom: 0.5rem;
+            font-family: monospace;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #00d4ff, #00a3cc);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DevOps Control Center</h1>
+        
+        <div class="dashboard-grid">
+            <!-- Services Status -->
+            <div class="card">
+                <h3>Service Status</h3>
+                <div class="service-status">
+                    <span>API Gateway</span>
+                    <span class="status-indicator status-green"></span>
+                </div>
+                <div class="service-status">
+                    <span>Kubernetes (K3s)</span>
+                    <span class="status-indicator status-green"></span>
+                </div>
+                <div class="service-status">
+                    <span>PostgreSQL Database</span>
+                    <span class="status-indicator status-green"></span>
+                </div>
+                <div class="service-status">
+                    <span>Redis Cache</span>
+                    <span class="status-indicator status-green"></span>
+                </div>
+                <div class="service-status">
+                    <span>Nginx Load Balancer</span>
+                    <span class="status-indicator status-green"></span>
+                </div>
+                <div class="service-status">
+                    <span>Docker Registry</span>
+                    <span class="status-indicator status-green"></span>
+                </div>
+                <div class="service-status">
+                    <span>Prometheus</span>
+                    <span class="status-indicator status-green"></span>
+                </div>
+                <div class="service-status">
+                    <span>Grafana</span>
+                    <span class="status-indicator status-green"></span>
+                </div>
+                <div class="service-status">
+                    <span>ElasticSearch</span>
+                    <span class="status-indicator status-yellow"></span>
+                </div>
+                <div class="service-status">
+                    <span>Jenkins CI</span>
+                    <span class="status-indicator status-green"></span>
+                </div>
+            </div>
+            
+            <!-- CI/CD Pipeline -->
+            <div class="card">
+                <h3>CI/CD Pipeline Status</h3>
+                <div style="margin: 1rem 0;">
+                    <span class="pipeline-stage">✅ Source</span>
+                    <span class="pipeline-stage">✅ Build</span>
+                    <span class="pipeline-stage">✅ Test</span>
+                    <span class="pipeline-stage">🔄 Security Scan</span>
+                    <span class="pipeline-stage">⏸️ Deploy</span>
+                    <span class="pipeline-stage">⏸️ Verify</span>
+                </div>
+                <div style="margin-top: 2rem;">
+                    <h4 style="color: #a1a1aa; margin-bottom: 1rem;">Recent Deployments</h4>
+                    <div class="service-status">
+                        <span>#1247 - Production - v2.4.7</span>
+                        <span style="color: #10b981;">2m ago</span>
+                    </div>
+                    <div class="service-status">
+                        <span>#1246 - Staging - v2.4.7-beta</span>
+                        <span style="color: #10b981;">15m ago</span>
+                    </div>
+                    <div class="service-status">
+                        <span>#1245 - Development - v2.5.0-alpha</span>
+                        <span style="color: #f59e0b;">1h ago</span>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button class="btn">Deploy to Prod</button>
+                    <button class="btn">Deploy to Staging</button>
+                    <button class="btn">View Logs</button>
+                </div>
+            </div>
+            
+            <!-- Git Worktrees -->
+            <div class="card">
+                <h3>Git Worktrees</h3>
+                <div class="worktree-item">
+                    <strong>main</strong><br>
+                    /home/johnmarston/worktrees/main<br>
+                    <span style="color: #a1a1aa;">Commit: 228562b</span>
+                </div>
+                <div class="worktree-item">
+                    <strong>staging</strong><br>
+                    /home/johnmarston/worktrees/staging<br>
+                    <span style="color: #a1a1aa;">Commit: 228562b</span>
+                </div>
+                <div class="worktree-item">
+                    <strong>feature/pihole-integration</strong><br>
+                    /home/johnmarston/vandine-network-monitor<br>
+                    <span style="color: #a1a1aa;">Commit: a08ab25 (current)</span>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button class="btn" onclick="alert('git worktree add ../worktrees/feature feature/branch')">Add Worktree</button>
+                    <button class="btn" onclick="alert('git worktree prune')">Prune</button>
+                    <button class="btn" onclick="alert('git worktree list')">List All</button>
+                </div>
+            </div>
+            
+            <!-- Infrastructure -->
+            <div class="card">
+                <h3>Infrastructure Components</h3>
+                <div class="service-status">
+                    <span>Palo Alto PA-220 Firewall</span>
+                    <span style="color: #10b981;">Online</span>
+                </div>
+                <div class="service-status">
+                    <span>UniFi Dream Machine</span>
+                    <span style="color: #10b981;">Online</span>
+                </div>
+                <div class="service-status">
+                    <span>Cloudflare Edge (5 Workers)</span>
+                    <span style="color: #10b981;">Active</span>
+                </div>
+                <div class="service-status">
+                    <span>RPi-1: Pi-hole DNS</span>
+                    <span style="color: #10b981;">Running</span>
+                </div>
+                <div class="service-status">
+                    <span>RPi-2: K8s Master</span>
+                    <span style="color: #10b981;">Running</span>
+                </div>
+                <div class="service-status">
+                    <span>RPi-3: Edge AI</span>
+                    <span style="color: #f59e0b;">High Load</span>
+                </div>
+            </div>
+            
+            <!-- Health Metrics -->
+            <div class="card">
+                <h3>System Health</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(0, 0, 0, 0.3); border-radius: 5px;">
+                        <div style="font-size: 2rem; color: #10b981;">99.97%</div>
+                        <div style="color: #a1a1aa;">Uptime</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(0, 0, 0, 0.3); border-radius: 5px;">
+                        <div style="font-size: 2rem; color: #00d4ff;">12ms</div>
+                        <div style="color: #a1a1aa;">Avg Response</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(0, 0, 0, 0.3); border-radius: 5px;">
+                        <div style="font-size: 2rem; color: #00ff88;">847 Mb/s</div>
+                        <div style="color: #a1a1aa;">Throughput</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(0, 0, 0, 0.3); border-radius: 5px;">
+                        <div style="font-size: 2rem; color: #f59e0b;">67%</div>
+                        <div style="color: #a1a1aa;">CPU Usage</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Automation Status -->
+            <div class="card">
+                <h3>Automation & Self-Healing</h3>
+                <div class="service-status">
+                    <span>Auto-scaling</span>
+                    <span style="color: #10b981;">Enabled</span>
+                </div>
+                <div class="service-status">
+                    <span>Auto-healing</span>
+                    <span style="color: #10b981;">Active</span>
+                </div>
+                <div class="service-status">
+                    <span>Backup Schedule</span>
+                    <span style="color: #10b981;">Daily 2AM</span>
+                </div>
+                <div class="service-status">
+                    <span>Security Scanning</span>
+                    <span style="color: #10b981;">Every Push</span>
+                </div>
+                <div class="service-status">
+                    <span>Certificate Renewal</span>
+                    <span style="color: #10b981;">Auto</span>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <div style="padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 5px;">
+                        <strong>Recent Actions:</strong><br>
+                        • Auto-scaled pods from 3 to 5<br>
+                        • Rotated SSL certificates<br>
+                        • Cleared cache (high memory)<br>
+                        • Restarted failed service
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
