@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vandine Network Monitor - Overview</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="nav-header">
+        <div class="nav-brand">
+            <img src="../assets/logo.svg" alt="Vandine" class="logo">
+            <span>Network Monitor</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="active">Overview</a>
+            <a href="pihole-dashboard.html">Pi-hole</a>
+            <a href="network-map.html">Network</a>
+            <a href="cloudflare.html">Cloudflare</a>
+            <a href="metrics.html">Metrics</a>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <!-- System Overview Header -->
+        <header class="overview-header">
+            <h1>Network Overview</h1>
+            <div class="status-badges">
+                <span class="badge success" id="pihole-status">Pi-hole: Online</span>
+                <span class="badge success" id="gateway-status">Gateway: Online</span>
+                <span class="badge info" id="cloudflare-status">Cloudflare: Connected</span>
+                <span class="badge warning" id="update-status">Last Update: Now</span>
+            </div>
+        </header>
+
+        <!-- Key Metrics Grid -->
+        <section class="metrics-overview">
+            <div class="metric-card">
+                <h3>DNS Performance</h3>
+                <div class="metric-chart">
+                    <canvas id="dns-performance"></canvas>
+                </div>
+                <div class="metric-stats">
+                    <div class="stat">
+                        <span>Avg Response:</span>
+                        <strong id="avg-response">0ms</strong>
+                    </div>
+                    <div class="stat">
+                        <span>Cache Hit Rate:</span>
+                        <strong id="cache-rate">0%</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>Network Security</h3>
+                <div class="metric-chart">
+                    <canvas id="security-overview"></canvas>
+                </div>
+                <div class="metric-stats">
+                    <div class="stat">
+                        <span>Threats Blocked:</span>
+                        <strong id="threats-blocked">0</strong>
+                    </div>
+                    <div class="stat">
+                        <span>Security Score:</span>
+                        <strong id="security-score">100</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>Traffic Analysis</h3>
+                <div class="metric-chart">
+                    <canvas id="traffic-analysis"></canvas>
+                </div>
+                <div class="metric-stats">
+                    <div class="stat">
+                        <span>Total Requests:</span>
+                        <strong id="total-requests">0</strong>
+                    </div>
+                    <div class="stat">
+                        <span>Bandwidth Used:</span>
+                        <strong id="bandwidth">0 MB</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>System Health</h3>
+                <div class="metric-chart">
+                    <canvas id="system-health"></canvas>
+                </div>
+                <div class="metric-stats">
+                    <div class="stat">
+                        <span>CPU Usage:</span>
+                        <strong id="cpu-usage">0%</strong>
+                    </div>
+                    <div class="stat">
+                        <span>Memory:</span>
+                        <strong id="memory-usage">0%</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Service Status Grid -->
+        <section class="services-grid">
+            <h2>Service Status</h2>
+            <div class="service-cards">
+                <div class="service-card" onclick="location.href='pihole-dashboard.html'">
+                    <div class="service-icon">🛡️</div>
+                    <h4>Pi-hole DNS</h4>
+                    <div class="service-status online">Operational</div>
+                    <div class="service-stats">
+                        <span id="pihole-queries">0 queries/min</span>
+                        <span id="pihole-blocked">0% blocked</span>
+                    </div>
+                </div>
+
+                <div class="service-card" onclick="location.href='cloudflare.html'">
+                    <div class="service-icon">☁️</div>
+                    <h4>Cloudflare CDN</h4>
+                    <div class="service-status online">Active</div>
+                    <div class="service-stats">
+                        <span id="cf-requests">0 requests</span>
+                        <span id="cf-cached">0% cached</span>
+                    </div>
+                </div>
+
+                <div class="service-card" onclick="location.href='network-map.html'">
+                    <div class="service-icon">🌐</div>
+                    <h4>Network Map</h4>
+                    <div class="service-status online">Monitoring</div>
+                    <div class="service-stats">
+                        <span id="device-count">0 devices</span>
+                        <span id="vlan-count">0 VLANs</span>
+                    </div>
+                </div>
+
+                <div class="service-card" onclick="location.href='metrics.html'">
+                    <div class="service-icon">📊</div>
+                    <h4>System Metrics</h4>
+                    <div class="service-status online">Collecting</div>
+                    <div class="service-stats">
+                        <span id="uptime">0h uptime</span>
+                        <span id="load">0.00 load</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Activity -->
+        <section class="activity-section">
+            <h2>Recent Activity</h2>
+            <div class="activity-feed" id="activity-feed">
+                <!-- Activity items will be added here dynamically -->
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/overview.js"></script>
+</body>
+</html>

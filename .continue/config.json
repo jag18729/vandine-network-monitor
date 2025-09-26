@@ -1,0 +1,63 @@
+{
+  "models": [
+    {
+      "title": "Claude 3.5 Sonnet",
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20241022",
+      "apiKey": ""
+    }
+  ],
+  "customCommands": [
+    {
+      "name": "test",
+      "description": "Run tests",
+      "command": "npm test"
+    },
+    {
+      "name": "deploy",
+      "description": "Deploy to production",
+      "command": "./deploy.sh"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Starcoder",
+    "provider": "huggingface",
+    "model": "bigcode/starcoder"
+  },
+  "contextProviders": [
+    {
+      "name": "codebase",
+      "params": {
+        "include": ["**/*.py", "**/*.js", "**/*.html", "**/*.css"],
+        "exclude": ["**/node_modules", "**/.venv", "**/venv"]
+      }
+    },
+    {
+      "name": "docs",
+      "params": {
+        "include": ["**/*.md"]
+      }
+    }
+  ],
+  "slashCommands": [
+    {
+      "name": "pihole-stats",
+      "description": "Get Pi-hole statistics",
+      "command": "curl -s http://192.168.2.7/admin/api.php?summaryRaw | jq"
+    },
+    {
+      "name": "check-services",
+      "description": "Check all service statuses",
+      "command": "docker-compose ps"
+    }
+  ],
+  "rules": [
+    "Focus on clean, maintainable code",
+    "Follow existing project patterns",
+    "Write comprehensive tests",
+    "Document all API endpoints",
+    "Use TypeScript for type safety where applicable",
+    "Implement proper error handling",
+    "Follow security best practices"
+  ]
+}

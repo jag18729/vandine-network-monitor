@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vandine Network Monitor - Unified Dashboard</title>
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #1e40af;
+            --secondary: #3b82f6;
+            --accent: #f97316;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 8px;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            background: var(--primary);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .query-log {
+            max-height: 400px;
+            overflow-y: auto;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .query-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+
+        .query-item:last-child {
+            border-bottom: none;
+        }
+
+        .query-domain {
+            color: var(--text-primary);
+            font-family: monospace;
+        }
+
+        .query-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .blocked {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .allowed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .network-map {
+            grid-column: span 2;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .network-map {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="dashboard-header">
+        <div class="header-title">
+            <div class="logo"></div>
+            <h1 class="title">Vandine Network Monitor</h1>
+        </div>
+        <div class="status-indicators">
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                <span>Pi-hole Active</span>
+            </div>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                <span>Gateway Online</span>
+            </div>
+            <div class="status-badge" id="client-count">
+                <span>0 Clients</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-grid">
+        <!-- Pi-hole Statistics Card -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">DNS Analytics</h2>
+                <span class="card-badge">Real-time</span>
+            </div>
+            <div class="stats-grid" id="pihole-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-queries">-</div>
+                    <div class="stat-label">Total Queries</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="blocked-queries">-</div>
+                    <div class="stat-label">Blocked</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="block-percentage">-</div>
+                    <div class="stat-label">Block Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="unique-clients">-</div>
+                    <div class="stat-label">Active Clients</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="queryChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Live Query Log -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">Live Queries</h2>
+                <span class="card-badge" id="query-count">0/min</span>
+            </div>
+            <div class="query-log" id="query-log">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Connecting to stream...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Top Domains -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">Top Domains</h2>
+                <span class="card-badge">Last 24h</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="topDomainsChart"></canvas>
+            </div>
+        </section>
+
+        <!-- System Metrics -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">System Health</h2>
+                <span class="card-badge" id="health-score">100%</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="metricsChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Network Topology -->
+        <section class="card network-map">
+            <div class="card-header">
+                <h2 class="card-title">Network Topology</h2>
+                <span class="card-badge" id="device-count">0 devices</span>
+            </div>
+            <div id="network-topology" style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Loading network map...</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // API Gateway configuration
+        const API_BASE = window.location.protocol + '//' + window.location.hostname + ':8888/api';
+        const WS_URL = 'ws://' + window.location.hostname + ':8888';
+        
+        // WebSocket connection
+        let ws = null;
+        let reconnectInterval = null;
+        
+        // Charts
+        let queryChart = null;
+        let topDomainsChart = null;
+        let metricsChart = null;
+        
+        // Initialize dashboard
+        async function initDashboard() {
+            connectWebSocket();
+            await fetchPiholeStats();
+            initCharts();
+            startPolling();
+        }
+        
+        // Connect to WebSocket for real-time updates
+        function connectWebSocket() {
+            ws = new WebSocket(WS_URL);
+            
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+                clearInterval(reconnectInterval);
+                
+                // Subscribe to Pi-hole updates
+                ws.send(JSON.stringify({
+                    type: 'subscribe',
+                    channels: ['pihole', 'metrics']
+                }));
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleRealtimeUpdate(data);
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                // Reconnect after 5 seconds
+                reconnectInterval = setTimeout(connectWebSocket, 5000);
+            };
+        }
+        
+        // Handle real-time updates
+        function handleRealtimeUpdate(data) {
+            switch (data.type) {
+                case 'pihole-update':
+                    updatePiholeStats(data.data);
+                    break;
+                case 'query-log':
+                    addQueryLogItem(data.data);
+                    break;
+                case 'metrics-update':
+                    updateMetrics(data.data);
+                    break;
+            }
+        }
+        
+        // Fetch Pi-hole statistics
+        async function fetchPiholeStats() {
+            try {
+                const response = await fetch(`${API_BASE}/pihole/summary`);
+                const data = await response.json();
+                updatePiholeStats(data);
+            } catch (error) {
+                console.error('Failed to fetch Pi-hole stats:', error);
+            }
+        }
+        
+        // Update Pi-hole statistics display
+        function updatePiholeStats(data) {
+            document.getElementById('total-queries').textContent = 
+                (data.dns_queries_today || 0).toLocaleString();
+            document.getElementById('blocked-queries').textContent = 
+                (data.ads_blocked_today || 0).toLocaleString();
+            document.getElementById('block-percentage').textContent = 
+                (data.ads_percentage_today || 0).toFixed(1) + '%';
+            document.getElementById('unique-clients').textContent = 
+                data.unique_clients || 0;
+            document.getElementById('client-count').innerHTML = 
+                `<span>${data.unique_clients || 0} Clients</span>`;
+        }
+        
+        // Initialize charts
+        function initCharts() {
+            // Query Chart
+            const queryCtx = document.getElementById('queryChart').getContext('2d');
+            queryChart = new Chart(queryCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Queries',
+                        data: [],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Blocked',
+                        data: [],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#94a3b8' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#334155' }
+                        },
+                        y: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#334155' }
+                        }
+                    }
+                }
+            });
+            
+            // Top Domains Chart
+            const domainsCtx = document.getElementById('topDomainsChart').getContext('2d');
+            topDomainsChart = new Chart(domainsCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Queries',
+                        data: [],
+                        backgroundColor: '#f97316'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#334155' }
+                        },
+                        y: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+            
+            // Metrics Chart
+            const metricsCtx = document.getElementById('metricsChart').getContext('2d');
+            metricsChart = new Chart(metricsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Allowed', 'Blocked', 'Cached'],
+                    datasets: [{
+                        data: [60, 30, 10],
+                        backgroundColor: ['#10b981', '#ef4444', '#3b82f6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Add query log item
+        function addQueryLogItem(query) {
+            const logContainer = document.getElementById('query-log');
+            
+            // Clear loading message if present
+            if (logContainer.querySelector('.loading')) {
+                logContainer.innerHTML = '';
+            }
+            
+            const item = document.createElement('div');
+            item.className = 'query-item';
+            item.innerHTML = `
+                <span class="query-domain">${query.domain}</span>
+                <span class="query-status ${query.blocked ? 'blocked' : 'allowed'}">
+                    ${query.blocked ? 'BLOCKED' : 'ALLOWED'}
+                </span>
+            `;
+            
+            // Add to top of log
+            logContainer.insertBefore(item, logContainer.firstChild);
+            
+            // Keep only last 50 items
+            while (logContainer.children.length > 50) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+        
+        // Start polling for updates
+        function startPolling() {
+            // Update every 5 seconds
+            setInterval(fetchPiholeStats, 5000);
+            
+            // Update charts every 10 seconds
+            setInterval(updateCharts, 10000);
+        }
+        
+        // Update charts with new data
+        async function updateCharts() {
+            try {
+                // Fetch overtime data
+                const overtimeResponse = await fetch(`${API_BASE}/pihole/overtime`);
+                const overtimeData = await overtimeResponse.json();
+                
+                // Update query chart
+                if (overtimeData.domains_over_time) {
+                    const labels = Object.keys(overtimeData.domains_over_time).slice(-20);
+                    const queries = labels.map(k => overtimeData.domains_over_time[k]);
+                    const blocked = labels.map(k => overtimeData.ads_over_time?.[k] || 0);
+                    
+                    queryChart.data.labels = labels.map(t => 
+                        new Date(t * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                    );
+                    queryChart.data.datasets[0].data = queries;
+                    queryChart.data.datasets[1].data = blocked;
+                    queryChart.update();
+                }
+                
+                // Fetch top domains
+                const topResponse = await fetch(`${API_BASE}/pihole/top-domains?count=5`);
+                const topData = await topResponse.json();
+                
+                if (topData.top_queries) {
+                    const domains = Object.keys(topData.top_queries).slice(0, 5);
+                    const counts = domains.map(d => topData.top_queries[d]);
+                    
+                    topDomainsChart.data.labels = domains;
+                    topDomainsChart.data.datasets[0].data = counts;
+                    topDomainsChart.update();
+                }
+            } catch (error) {
+                console.error('Failed to update charts:', error);
+            }
+        }
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

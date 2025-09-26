@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi-hole Dashboard - Vandine Network</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="nav-header">
+        <div class="nav-brand">
+            <img src="../assets/logo.svg" alt="Vandine" class="logo">
+            <span>Pi-hole Monitor</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Overview</a>
+            <a href="pihole-dashboard.html" class="active">Pi-hole</a>
+            <a href="network-map.html">Network</a>
+            <a href="cloudflare.html">Cloudflare</a>
+            <a href="metrics.html">Metrics</a>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <!-- Quick Stats Bar -->
+        <section class="stats-bar">
+            <div class="stat-card primary">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="queries-today">0</div>
+                    <div class="stat-label">Queries Today</div>
+                </div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-icon">🛡️</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="blocked-today">0</div>
+                    <div class="stat-label">Blocked</div>
+                </div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="block-rate">0%</div>
+                    <div class="stat-label">Block Rate</div>
+                </div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-icon">💻</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="active-clients">0</div>
+                    <div class="stat-label">Active Clients</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Real-time Query Graph -->
+            <section class="card span-2">
+                <h2>Query Activity (Last 24 Hours)</h2>
+                <canvas id="queryActivityChart"></canvas>
+            </section>
+
+            <!-- Top Blocked Domains -->
+            <section class="card">
+                <h2>Top Blocked Domains</h2>
+                <div id="blocked-domains-list" class="domain-list"></div>
+            </section>
+
+            <!-- Top Allowed Domains -->
+            <section class="card">
+                <h2>Top Allowed Domains</h2>
+                <div id="allowed-domains-list" class="domain-list"></div>
+            </section>
+
+            <!-- Client Activity -->
+            <section class="card">
+                <h2>Client Activity</h2>
+                <canvas id="clientActivityChart"></canvas>
+            </section>
+
+            <!-- Query Types -->
+            <section class="card">
+                <h2>Query Types Distribution</h2>
+                <canvas id="queryTypesChart"></canvas>
+            </section>
+
+            <!-- Live Query Log -->
+            <section class="card span-2">
+                <h2>Live Query Log</h2>
+                <div class="query-controls">
+                    <input type="text" id="query-filter" placeholder="Filter queries...">
+                    <button id="clear-log">Clear</button>
+                    <button id="pause-log">Pause</button>
+                </div>
+                <div id="live-query-log" class="query-log"></div>
+            </section>
+
+            <!-- Upstream Servers -->
+            <section class="card">
+                <h2>Upstream DNS Performance</h2>
+                <canvas id="upstreamChart"></canvas>
+            </section>
+
+            <!-- Cache Stats -->
+            <section class="card">
+                <h2>Cache Statistics</h2>
+                <div class="cache-stats">
+                    <div class="cache-item">
+                        <span>Cache Size:</span>
+                        <strong id="cache-size">0</strong>
+                    </div>
+                    <div class="cache-item">
+                        <span>Cache Hits:</span>
+                        <strong id="cache-hits">0</strong>
+                    </div>
+                    <div class="cache-item">
+                        <span>Cache Misses:</span>
+                        <strong id="cache-misses">0</strong>
+                    </div>
+                    <div class="cache-item">
+                        <span>Hit Rate:</span>
+                        <strong id="cache-hit-rate">0%</strong>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="../js/pihole-dashboard.js"></script>
+</body>
+</html>
