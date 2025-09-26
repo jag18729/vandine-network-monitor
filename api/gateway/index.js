@@ -19,7 +19,7 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 // Configuration
-const PORT = process.env.API_GATEWAY_PORT || 8888;
+const PORT = process.env.API_GATEWAY_PORT || 8887;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Service endpoints

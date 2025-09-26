@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Network Engineering Lab</title>
+    <style>
+        body { background: #0f172a; color: #f1f5f9; font-family: monospace; }
+        .control-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 2rem; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem; }
+        .button { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 1rem; border-radius: 8px; cursor: pointer; width: 100%; margin: 0.5rem 0; }
+        .metric { font-size: 2rem; color: #10b981; }
+        #results { background: #000; padding: 1rem; border-radius: 8px; min-height: 200px; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Network Engineering Test Lab</h1>
+    
+    <div class="control-panel">
+        <div class="card">
+            <h3>TCP Congestion Control</h3>
+            <div id="current-cc" class="metric">BBR</div>
+            <button onclick="setCongestion('bbr')">Switch to BBR</button>
+            <button onclick="setCongestion('cubic')">Switch to Cubic</button>
+            <button onclick="setCongestion('reno')">Switch to Reno</button>
+        </div>
+        
+        <div class="card">
+            <h3>Network Tests</h3>
+            <button onclick="runTest('bandwidth')">Test Bandwidth</button>
+            <button onclick="runTest('latency')">Test Latency</button>
+            <button onclick="runTest('mtu_discovery')">MTU Discovery</button>
+            <button onclick="runTest('packet_loss')">Packet Loss Test</button>
+        </div>
+        
+        <div class="card">
+            <h3>WebSocket Settings</h3>
+            <label>Window Size: <input type="range" id="ws-window" min="16384" max="1048576" value="65536" onchange="updateWindow()"></label>
+            <span id="ws-size">64KB</span>
+            <button onclick="connectWS()">Connect WebSocket</button>
+        </div>
+    </div>
+    
+    <div id="results">Ready for testing...</div>
+    
+    <script>
+        const API = '/api';
+        let ws = null;
+        
+        async function setCongestion(algo) {
+            const res = await fetch(API + '/network/congestion-control', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({algorithm: algo})
+            });
+            const data = await res.json();
+            document.getElementById('current-cc').textContent = algo.toUpperCase();
+            document.getElementById('results').innerHTML += '<br>' + data.message;
+        }
+        
+        async function runTest(type) {
+            document.getElementById('results').innerHTML += '<br>Running ' + type + ' test...';
+            const res = await fetch(API + '/network/test', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({test_type: type})
+            });
+            const data = await res.json();
+            document.getElementById('results').innerHTML += '<br>' + JSON.stringify(data, null, 2);
+        }
+        
+        function updateWindow() {
+            const size = document.getElementById('ws-window').value;
+            document.getElementById('ws-size').textContent = (size/1024) + 'KB';
+            if (ws) ws.send(JSON.stringify({action: 'set_window_size', size: parseInt(size)}));
+        }
+        
+        function connectWS() {
+            ws = new WebSocket('ws://' + window.location.host + '/ws/network-monitor');
+            ws.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                if (data.type === 'metrics') {
+                    document.getElementById('results').innerHTML = '<pre>' + JSON.stringify(data.data, null, 2) + '</pre>';
+                }
+            };
+        }
+        
+        // Auto-load current congestion control
+        fetch(API + '/network/congestion-control').then(r => r.json()).then(d => {
+            document.getElementById('current-cc').textContent = d.current.toUpperCase();
+        });
+    </script>
+</body>
+</html>
