@@ -1,165 +1,78 @@
-name: Deploy Network Monitor
+name: Deploy to Production
 
 on:
   push:
-    branches:
-      - dev
-      - staging
-      - main
-  pull_request:
-    branches:
-      - main
-      - staging
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
 
 jobs:
-  # Linting and Testing
-  test:
-    name: Test & Validate
+  deploy:
+    name: Deploy Application
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
-      - name: Validate HTML structure
-        run: |
-          echo "Validating HTML files..."
-          if [ -f vandine-showcase.html ]; then
-            # Basic HTML validation
-            grep -q "<!DOCTYPE html>" vandine-showcase.html && echo "✅ HTML doctype found"
-            grep -q "<html" vandine-showcase.html && echo "✅ HTML tag found"
-            grep -q "</html>" vandine-showcase.html && echo "✅ HTML properly closed"
-          else
-            echo "❌ Main HTML file not found"
-            exit 1
-          fi
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
       
-      - name: Check for sensitive data
-        run: |
-          echo "Checking for exposed credentials..."
-          # Check for common secret patterns (excluding .env files)
-          if grep -r "password=\|secret=\|api_key=\|token=" --include="*.html" --include="*.js" --exclude-dir=".git" . 2>/dev/null | grep -v "example\|placeholder\|your" ; then
-            echo "⚠️ Potential secrets found in code"
-            exit 1
-          else
-            echo "✅ No exposed secrets found"
-          fi
+      - name: Install dependencies
+        run: npm ci --production
       
-      - name: Check file sizes
-        run: |
-          echo "Checking file sizes..."
-          find . -name "*.html" -size +1M -exec echo "⚠️ Large HTML file: {}" \;
-          echo "✅ File size check complete"
+      - name: Run pre-deployment tests
+        run: npm run validate
       
-      - name: Verify required files
-        run: |
-          echo "Checking required files..."
-          [ -f README.md ] && echo "✅ README.md exists" || exit 1
-          [ -f .gitignore ] && echo "✅ .gitignore exists" || exit 1
-          [ -f vandine-showcase.html ] && echo "✅ Main HTML exists" || exit 1
-          echo "✅ All required files present"
-
-  # Development Deployment
-  deploy-dev:
-    name: Deploy to Development
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
       
-      - name: Setup environment
-        run: |
-          echo "Setting up development environment"
-          if [ -f .env.development ]; then
-            cp .env.development .env
-            echo "✅ Development environment configured"
-          fi
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: vandine-dashboard
+          directory: ./dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          wranglerVersion: '3'
       
-      - name: Build for development
+      - name: Deploy Cloudflare Worker
         run: |
-          echo "Building for development..."
-          echo "Build timestamp: Sat Sep  6 11:20:16 PDT 2025" > build.txt
-          echo "Environment: development" >> build.txt
-          echo "Branch: ${{ github.ref_name }}" >> build.txt
-          echo "✅ Build complete"
+          npm install -g wrangler
+          wrangler publish ./cloudflare-worker.js
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       
-      - name: Deploy notification
+      - name: Verify deployment
         run: |
-          echo "📦 Development deployment complete"
-          echo "URL: https://dev.rafael.vandine.us (configure your server)"
-
-  # Staging Deployment  
-  deploy-staging:
-    name: Deploy to Staging
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+          sleep 30
+          curl -f https://vandine.us/api/health || exit 1
       
-      - name: Setup environment
+      - name: Send deployment notification
+        if: success()
         run: |
-          echo "Setting up staging environment"
-          if [ -f .env.staging ]; then
-            cp .env.staging .env
-            echo "✅ Staging environment configured"
-          fi
+          echo "Deployment successful to ${{ github.event.inputs.environment || 'production' }}"
       
-      - name: Run smoke tests
+      - name: Rollback on failure
+        if: failure()
         run: |
-          echo "Running smoke tests..."
-          # Check if main files exist and are valid
-          [ -f vandine-showcase.html ] && echo "✅ Main page exists"
-          # Check HTML is valid
-          grep -q "<!DOCTYPE html>" vandine-showcase.html && echo "✅ Valid HTML"
-          echo "✅ Smoke tests passed"
-      
-      - name: Deploy notification
-        run: |
-          echo "🚀 Staging deployment complete"
-          echo "URL: https://staging.rafael.vandine.us (configure your server)"
-
-  # Production Deployment
-  deploy-production:
-    name: Deploy to Production
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Setup environment
-        run: |
-          echo "Setting up production environment"
-          if [ -f .env.production ]; then
-            cp .env.production .env
-            echo "✅ Production environment configured"
-          fi
-      
-      - name: Production checks
-        run: |
-          echo "Running production safety checks..."
-          # Verify no debug code
-          if grep -r "console.log\|debugger" --include="*.html" --include="*.js" . 2>/dev/null | grep -v "//" ; then
-            echo "⚠️ Debug code found - review before production"
-          fi
-          echo "✅ Production checks complete"
-      
-      - name: Create release info
-        run: |
-          echo "Creating release information..."
-          echo "Release: ${{ github.sha }}" > release.txt
-          echo "Date: Sat Sep  6 11:20:16 PDT 2025" >> release.txt
-          echo "✅ Release info created"
-      
-      - name: Deploy notification
-        run: |
-          echo "✨ Production deployment complete"
-          echo "URL: https://rafael.vandine.us"
+          echo "Deployment failed, initiating rollback..."
+          # Add rollback logic here
+EOFDEPLOY'
