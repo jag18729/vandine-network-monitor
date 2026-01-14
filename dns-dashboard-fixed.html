@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vandine DNS Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(21, 25, 50, 0.95);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #00d4ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 { color: #00d4ff; font-size: 1.8rem; }
+        .nav-links a {
+            color: #a1a1aa;
+            text-decoration: none;
+            margin-left: 1.5rem;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: #00d4ff; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .tab {
+            padding: 0.8rem 1.5rem;
+            background: rgba(21, 25, 50, 0.8);
+            border: 1px solid #2a2e4a;
+            color: #a1a1aa;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .tab:hover { border-color: #00d4ff; }
+        .tab.active { background: linear-gradient(135deg, #00d4ff, #00a3cc); color: white; border-color: #00d4ff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .test-section {
+            background: rgba(21, 25, 50, 0.8);
+            border: 1px solid #2a2e4a;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .test-section h3 { color: #00ff88; margin-bottom: 1rem; }
+        button {
+            padding: 0.6rem 1.2rem;
+            background: linear-gradient(135deg, #00d4ff, #00a3cc);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3); }
+        button.secondary { background: linear-gradient(135deg, #00ff88, #00cc6a); }
+        .result-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #2a2e4a;
+            border-radius: 5px;
+            font-family: 'JetBrains Mono', monospace;
+            white-space: pre-wrap;
+            max-height: 350px;
+            overflow-y: auto;
+            color: #00ff88;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        input, select {
+            padding: 0.6rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #2a2e4a;
+            color: white;
+            border-radius: 5px;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        input:focus, select:focus { border-color: #00d4ff; outline: none; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: rgba(21, 25, 50, 0.8);
+            border: 1px solid #2a2e4a;
+            border-radius: 10px;
+            padding: 1.25rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .stat-card:hover { border-color: #00d4ff; transform: translateY(-3px); }
+        .stat-value { font-size: 1.8rem; font-weight: bold; color: #00d4ff; font-family: 'JetBrains Mono', monospace; }
+        .stat-label { color: #a1a1aa; margin-top: 0.5rem; font-size: 0.9rem; }
+        .error { color: #ef4444; }
+        .success { color: #10b981; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DNS & Network Dashboard</h1>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="nasa.html">NASA</a>
+            <a href="network-test.html">Network Lab</a>
+            <a href="devops.html">DevOps</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(event, 'dns')">DNS Resolver</button>
+            <button class="tab" onclick="switchTab(event, 'benchmark')">DNS Benchmark</button>
+            <button class="tab" onclick="switchTab(event, 'pihole')">Pi-hole Stats</button>
+            <button class="tab" onclick="switchTab(event, 'history')">History</button>
+        </div>
+
+        <!-- DNS Tab -->
+        <div id="dns" class="tab-content active">
+            <div class="test-section">
+                <h3>DNS Resolution (via Cloudflare DoH)</h3>
+                <div style="margin-bottom: 1rem;">
+                    <input type="text" id="domain" placeholder="Enter domain" value="google.com" style="width: 250px;">
+                    <select id="record-type">
+                        <option value="A">A (IPv4)</option>
+                        <option value="AAAA">AAAA (IPv6)</option>
+                        <option value="MX">MX (Mail)</option>
+                        <option value="TXT">TXT</option>
+                        <option value="NS">NS</option>
+                        <option value="CNAME">CNAME</option>
+                    </select>
+                    <button onclick="resolveDNS()">Resolve</button>
+                    <button class="secondary" onclick="resolveAll()">All Records</button>
+                </div>
+                <div class="result-box" id="dns-result">Enter a domain and click Resolve to query DNS records via Cloudflare DoH API.</div>
+            </div>
+
+            <div class="test-section">
+                <h3>Quick Lookups</h3>
+                <button onclick="quickLookup('vandine.us')">vandine.us</button>
+                <button onclick="quickLookup('cloudflare.com')">cloudflare.com</button>
+                <button onclick="quickLookup('github.com')">github.com</button>
+                <button onclick="quickLookup('google.com')">google.com</button>
+            </div>
+        </div>
+
+        <!-- Benchmark Tab -->
+        <div id="benchmark" class="tab-content">
+            <div class="test-section">
+                <h3>DNS Server Benchmark</h3>
+                <p style="color: #a1a1aa; margin-bottom: 1rem;">Compare response times from different DNS providers using DoH.</p>
+                <button onclick="benchmarkDNS()">Run Benchmark</button>
+                <button class="secondary" onclick="benchmarkDetailed()">Detailed Test</button>
+                <div class="result-box" id="benchmark-result">Click "Run Benchmark" to compare DNS server response times.</div>
+            </div>
+
+            <div class="stats-grid" id="benchmark-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="cf-time">--</div>
+                    <div class="stat-label">Cloudflare (1.1.1.1)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="google-time">--</div>
+                    <div class="stat-label">Google (8.8.8.8)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="quad9-time">--</div>
+                    <div class="stat-label">Quad9 (9.9.9.9)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pi-hole Tab -->
+        <div id="pihole" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="queries-today">--</div>
+                    <div class="stat-label">Queries Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="blocked-today">--</div>
+                    <div class="stat-label">Blocked Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="block-rate">--%</div>
+                    <div class="stat-label">Block Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="domains-blocked">--</div>
+                    <div class="stat-label">Domains on Blocklist</div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>Pi-hole Status</h3>
+                <button onclick="getPiholeStats()">Refresh Stats</button>
+                <a href="http://192.168.2.70/admin" target="_blank"><button class="secondary">Open Pi-hole Admin</button></a>
+                <div class="result-box" id="pihole-result">Click "Refresh Stats" to fetch Pi-hole statistics.
+
+Note: Pi-hole API requires local network access.</div>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history" class="tab-content">
+            <div class="test-section">
+                <h3>Recent DNS Lookups</h3>
+                <button onclick="loadHistory()">Load History</button>
+                <button class="secondary" onclick="clearHistory()">Clear History</button>
+                <div class="result-box" id="history-result">Click "Load History" to view recent lookups stored in your browser.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Use Cloudflare's DNS-over-HTTPS API
+        const DOH_API = 'https://cloudflare-dns.com/dns-query';
+
+        function switchTab(event, tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function saveToHistory(domain, type, result) {
+            const history = JSON.parse(localStorage.getItem('dnsHistory') || '[]');
+            history.unshift({
+                domain: domain,
+                type: type,
+                timestamp: new Date().toISOString(),
+                result: result
+            });
+            localStorage.setItem('dnsHistory', JSON.stringify(history.slice(0, 50)));
+        }
+
+        async function resolveDNS() {
+            const domain = document.getElementById('domain').value.trim();
+            const type = document.getElementById('record-type').value;
+            const result = document.getElementById('dns-result');
+
+            if (!domain) {
+                result.innerHTML = '<span class="error">Please enter a domain name</span>';
+                return;
+            }
+
+            result.textContent = `Resolving ${domain} (${type})...`;
+
+            try {
+                const response = await fetch(`${DOH_API}?name=${domain}&type=${type}`, {
+                    headers: { 'Accept': 'application/dns-json' }
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+
+                let output = `DNS Lookup: ${domain}\nRecord Type: ${type}\nStatus: ${data.Status === 0 ? 'SUCCESS' : 'NXDOMAIN'}\n\n`;
+
+                if (data.Answer && data.Answer.length > 0) {
+                    output += 'ANSWERS:\n';
+                    data.Answer.forEach((ans, i) => {
+                        output += `  ${i+1}. ${ans.name} -> ${ans.data} (TTL: ${ans.TTL}s)\n`;
+                    });
+                } else {
+                    output += 'No records found for this query type.\n';
+                }
+
+                if (data.Authority && data.Authority.length > 0) {
+                    output += '\nAUTHORITY:\n';
+                    data.Authority.forEach(auth => {
+                        output += `  ${auth.name} -> ${auth.data}\n`;
+                    });
+                }
+
+                result.textContent = output;
+                saveToHistory(domain, type, data.Answer || []);
+
+            } catch (error) {
+                result.innerHTML = `<span class="error">Error: ${error.message}</span>\n\nTip: Check your internet connection or try a different domain.`;
+            }
+        }
+
+        async function resolveAll() {
+            const domain = document.getElementById('domain').value.trim();
+            const result = document.getElementById('dns-result');
+
+            if (!domain) {
+                result.innerHTML = '<span class="error">Please enter a domain name</span>';
+                return;
+            }
+
+            result.textContent = `Fetching all records for ${domain}...\n\n`;
+            const types = ['A', 'AAAA', 'MX', 'TXT', 'NS'];
+
+            for (const type of types) {
+                try {
+                    const response = await fetch(`${DOH_API}?name=${domain}&type=${type}`, {
+                        headers: { 'Accept': 'application/dns-json' }
+                    });
+                    const data = await response.json();
+
+                    result.textContent += `--- ${type} Records ---\n`;
+                    if (data.Answer && data.Answer.length > 0) {
+                        data.Answer.forEach(ans => {
+                            result.textContent += `  ${ans.data}\n`;
+                        });
+                    } else {
+                        result.textContent += '  (none)\n';
+                    }
+                    result.textContent += '\n';
+                } catch (e) {
+                    result.textContent += `--- ${type} Records ---\n  Error fetching\n\n`;
+                }
+            }
+        }
+
+        function quickLookup(domain) {
+            document.getElementById('domain').value = domain;
+            resolveDNS();
+        }
+
+        async function benchmarkDNS() {
+            const result = document.getElementById('benchmark-result');
+            result.textContent = 'Running DNS benchmark...\n\n';
+
+            const providers = [
+                { name: 'Cloudflare', url: 'https://cloudflare-dns.com/dns-query', id: 'cf-time' },
+                { name: 'Google', url: 'https://dns.google/resolve', id: 'google-time' },
+                { name: 'Quad9', url: 'https://dns.quad9.net:5053/dns-query', id: 'quad9-time' }
+            ];
+
+            for (const provider of providers) {
+                const start = performance.now();
+                try {
+                    const response = await fetch(`${provider.url}?name=cloudflare.com&type=A`, {
+                        headers: { 'Accept': 'application/dns-json' }
+                    });
+                    await response.json();
+                    const time = Math.round(performance.now() - start);
+
+                    document.getElementById(provider.id).textContent = `${time}ms`;
+                    result.textContent += `${provider.name}: ${time}ms ✓\n`;
+                } catch (e) {
+                    document.getElementById(provider.id).textContent = 'Error';
+                    result.textContent += `${provider.name}: Failed ✗\n`;
+                }
+            }
+
+            result.textContent += '\nBenchmark complete!';
+        }
+
+        async function benchmarkDetailed() {
+            const result = document.getElementById('benchmark-result');
+            result.textContent = 'Running detailed benchmark (5 queries each)...\n\n';
+
+            const domains = ['google.com', 'facebook.com', 'amazon.com', 'twitter.com', 'github.com'];
+            let cfTotal = 0, googleTotal = 0;
+
+            for (const domain of domains) {
+                // Cloudflare
+                const cfStart = performance.now();
+                try {
+                    await fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=A`, {
+                        headers: { 'Accept': 'application/dns-json' }
+                    });
+                    cfTotal += performance.now() - cfStart;
+                } catch (e) {}
+
+                // Google
+                const googleStart = performance.now();
+                try {
+                    await fetch(`https://dns.google/resolve?name=${domain}&type=A`, {
+                        headers: { 'Accept': 'application/dns-json' }
+                    });
+                    googleTotal += performance.now() - googleStart;
+                } catch (e) {}
+            }
+
+            const cfAvg = Math.round(cfTotal / domains.length);
+            const googleAvg = Math.round(googleTotal / domains.length);
+
+            result.textContent += `Average over ${domains.length} domains:\n\n`;
+            result.textContent += `Cloudflare (1.1.1.1): ${cfAvg}ms average\n`;
+            result.textContent += `Google (8.8.8.8):     ${googleAvg}ms average\n\n`;
+            result.textContent += cfAvg < googleAvg ?
+                '✓ Cloudflare is faster for your location' :
+                '✓ Google is faster for your location';
+
+            document.getElementById('cf-time').textContent = `${cfAvg}ms`;
+            document.getElementById('google-time').textContent = `${googleAvg}ms`;
+        }
+
+        async function getPiholeStats() {
+            const result = document.getElementById('pihole-result');
+            result.textContent = 'Checking Pi-hole status...\n';
+
+            // Try the gateway API first
+            try {
+                const response = await fetch('http://192.168.2.70:8887/api/status', {
+                    signal: AbortSignal.timeout(5000)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const piholeStatus = data.services?.pihole || 'unknown';
+
+                    // Update status display
+                    if (piholeStatus === 'online') {
+                        document.getElementById('queries-today').textContent = 'Active';
+                        document.getElementById('blocked-today').textContent = 'Filtering';
+                        document.getElementById('block-rate').textContent = 'Online';
+                        document.getElementById('domains-blocked').textContent = '100K+';
+
+                        result.innerHTML = `<span class="success">Pi-hole Status: ONLINE</span>
+
+Gateway API Response:
+${JSON.stringify(data, null, 2)}
+
+<span style="color: #a1a1aa;">Pi-hole v6+ requires authentication for detailed stats.
+Access the admin panel for full statistics:</span>
+
+<a href="http://192.168.2.70/admin" target="_blank" style="color: #00d4ff;">Open Pi-hole Admin Dashboard</a>`;
+                        return;
+                    }
+                }
+            } catch (e) {
+                // Gateway not reachable
+            }
+
+            // Fallback: Show offline message
+            document.getElementById('queries-today').textContent = '--';
+            document.getElementById('blocked-today').textContent = '--';
+            document.getElementById('block-rate').textContent = '--';
+            document.getElementById('domains-blocked').textContent = '--';
+
+            result.innerHTML = `<span class="error">Pi-hole API not reachable</span>
+
+This could mean:
+• You're not on the local network (192.168.2.x)
+• The API gateway service isn't running
+• Pi-hole is offline
+
+<span class="success">Try accessing directly:</span>
+<a href="http://192.168.2.70/admin" target="_blank" style="color: #00d4ff;">http://192.168.2.70/admin</a>`;
+        }
+
+        function loadHistory() {
+            const result = document.getElementById('history-result');
+            const history = JSON.parse(localStorage.getItem('dnsHistory') || '[]');
+
+            if (history.length === 0) {
+                result.textContent = 'No DNS lookup history found.\n\nHistory is stored in your browser\'s local storage.';
+                return;
+            }
+
+            let output = 'Recent DNS Lookups:\n\n';
+            history.slice(0, 20).forEach((entry, i) => {
+                const time = new Date(entry.timestamp).toLocaleString();
+                output += `${i+1}. ${entry.domain} (${entry.type}) - ${time}\n`;
+                if (entry.result && entry.result.length > 0) {
+                    entry.result.forEach(r => {
+                        output += `   -> ${r.data}\n`;
+                    });
+                }
+                output += '\n';
+            });
+
+            result.textContent = output;
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('dnsHistory');
+            document.getElementById('history-result').textContent = 'History cleared successfully.';
+        }
+
+        // Initialize
+        window.onload = function() {
+            // Try to fetch Pi-hole stats on load
+            getPiholeStats();
+        };
+    </script>
+</body>
+</html>

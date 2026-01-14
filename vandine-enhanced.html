@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vandine Zero-Trust Network Operations Center</title>
+    <meta name="description" content="Production-grade network infrastructure by Rafael J. Garcia - NASA JPL Network Engineer">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(21, 25, 50, 0.95);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #00d4ff;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .security-badge {
+            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+        .social-links a {
+            color: #a1a1aa;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .social-links a:hover {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+        }
+        .container { max-width: 1800px; margin: 0 auto; padding: 2rem; }
+        h1 { text-align: center; color: #00d4ff; font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .subtitle { text-align: center; color: #a1a1aa; margin-bottom: 1rem; }
+
+        .main-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: rgba(21, 25, 50, 0.5);
+            padding: 0.5rem;
+            border-radius: 10px;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+        .main-tab {
+            padding: 1rem 1.5rem;
+            background: transparent;
+            border: 2px solid transparent;
+            color: #a1a1aa;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 5px;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+        .main-tab:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+        .main-tab.active {
+            background: linear-gradient(135deg, #00d4ff, #00a3cc);
+            color: white;
+            border-color: #00d4ff;
+        }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Quick Links Grid */
+        .quick-links-section {
+            margin-bottom: 2rem;
+        }
+        .quick-links-title {
+            color: #00d4ff;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .quick-links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .quick-link {
+            background: rgba(21, 25, 50, 0.9);
+            border: 2px solid #2a2e4a;
+            border-radius: 10px;
+            padding: 1.25rem;
+            text-decoration: none;
+            color: #e4e4e7;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .quick-link:hover {
+            border-color: #00d4ff;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.2);
+        }
+        .quick-link-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .quick-link-title {
+            font-weight: 600;
+            color: #00ff88;
+            margin-bottom: 0.25rem;
+        }
+        .quick-link-desc {
+            font-size: 0.8rem;
+            color: #a1a1aa;
+        }
+        .quick-link.external::after {
+            content: ' ↗';
+            font-size: 0.7rem;
+        }
+
+        /* Professional Experience */
+        .experience-section {
+            background: linear-gradient(135deg, rgba(0, 81, 195, 0.1), rgba(244, 129, 32, 0.05));
+            border: 2px solid #0051c3;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .experience-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .experience-title {
+            color: #00d4ff;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .experience-role {
+            color: #f48120;
+            font-size: 1.1rem;
+        }
+        .experience-date {
+            color: #a1a1aa;
+        }
+        .experience-highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .highlight-item {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+        .highlight-icon {
+            color: #00ff88;
+            font-size: 1.2rem;
+        }
+        .highlight-text {
+            color: #e4e4e7;
+            font-size: 0.95rem;
+        }
+
+        /* GitHub Projects */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .project-card {
+            background: rgba(21, 25, 50, 0.9);
+            border: 2px solid #2a2e4a;
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        .project-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-3px);
+        }
+        .project-category {
+            font-size: 0.75rem;
+            color: #a1a1aa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+        .project-name {
+            color: #00ff88;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .project-name a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .project-name a:hover {
+            text-decoration: underline;
+        }
+        .project-desc {
+            color: #a1a1aa;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .project-tech {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .tech-badge {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .infrastructure-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .device-card {
+            background: rgba(21, 25, 50, 0.9);
+            border: 2px solid #2a2e4a;
+            border-radius: 10px;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .device-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+        .device-card.online { border-left: 4px solid #10b981; }
+        .device-card.offline { border-left: 4px solid #ef4444; }
+        .device-card.warning { border-left: 4px solid #f59e0b; }
+
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .device-name {
+            font-size: 1.2rem;
+            color: #00ff88;
+            font-weight: bold;
+        }
+        .device-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status-online { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-offline { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .status-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+
+        .device-info {
+            display: grid;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .info-label { color: #a1a1aa; }
+        .info-value { color: #e4e4e7; font-family: monospace; }
+
+        .device-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .device-actions button {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #00d4ff, #00a3cc);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .device-actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .test-section {
+            background: rgba(21, 25, 50, 0.8);
+            border: 1px solid #2a2e4a;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .metric {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 2rem;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        .metric-label {
+            color: #a1a1aa;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .result-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #2a2e4a;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            color: #00ff88;
+        }
+
+        h3 {
+            color: #00ff88;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .api-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        .api-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+        .api-dot.offline { background: #ef4444; animation: none; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .footer {
+            background: rgba(21, 25, 50, 0.95);
+            border-top: 1px solid #2a2e4a;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .footer-links a {
+            color: #a1a1aa;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover {
+            color: #00d4ff;
+        }
+        .footer-copyright {
+            color: #71717a;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .header-top { flex-direction: column; gap: 1rem; }
+            .social-links { flex-wrap: wrap; justify-content: center; }
+            .experience-header { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-top">
+                <div class="security-badge">Zero Trust Active</div>
+                <div class="social-links">
+                    <a href="https://github.com/jag18729" target="_blank">GitHub</a>
+                    <a href="https://linkedin.com/in/rafaeljgarcia" target="_blank">LinkedIn</a>
+                </div>
+            </div>
+            <h1>Vandine Zero-Trust Network Operations Center</h1>
+            <p class="subtitle">Enterprise Infrastructure | Production Network by Rafael J. Garcia</p>
+
+            <div class="main-tabs">
+                <button class="main-tab active" onclick="switchPage(event, 'home')">Home</button>
+                <button class="main-tab" onclick="switchPage(event, 'infrastructure')">Infrastructure</button>
+                <button class="main-tab" onclick="switchPage(event, 'experience')">Experience</button>
+                <button class="main-tab" onclick="switchPage(event, 'projects')">GitHub Projects</button>
+                <a href="nasa.html" class="main-tab" style="text-decoration: none;">NASA Principles</a>
+                <button class="main-tab" onclick="switchPage(event, 'monitoring')">Live Monitoring</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Home Page -->
+        <div id="home" class="page active">
+            <!-- Quick Links -->
+            <div class="quick-links-section">
+                <h2 class="quick-links-title">Quick Links</h2>
+                <div class="quick-links-grid">
+                    <a href="nasa.html" class="quick-link">
+                        <span class="quick-link-icon">🚀</span>
+                        <span class="quick-link-title">NASA Principles</span>
+                        <span class="quick-link-desc">Power of Ten coding standards</span>
+                    </a>
+                    <a href="http://192.168.2.70:3000" class="quick-link external" target="_blank">
+                        <span class="quick-link-icon">📊</span>
+                        <span class="quick-link-title">Grafana</span>
+                        <span class="quick-link-desc">Monitoring dashboards</span>
+                    </a>
+                    <a href="http://192.168.2.70:9090" class="quick-link external" target="_blank">
+                        <span class="quick-link-icon">📈</span>
+                        <span class="quick-link-title">Prometheus</span>
+                        <span class="quick-link-desc">Metrics database</span>
+                    </a>
+                    <a href="http://192.168.2.70/admin" class="quick-link external" target="_blank">
+                        <span class="quick-link-icon">🛡️</span>
+                        <span class="quick-link-title">Pi-hole</span>
+                        <span class="quick-link-desc">DNS filtering</span>
+                    </a>
+                    <a href="dns-dashboard.html" class="quick-link">
+                        <span class="quick-link-icon">🌐</span>
+                        <span class="quick-link-title">DNS Dashboard</span>
+                        <span class="quick-link-desc">DNS testing & stats</span>
+                    </a>
+                    <a href="network-test.html" class="quick-link">
+                        <span class="quick-link-icon">🔬</span>
+                        <span class="quick-link-title">Network Lab</span>
+                        <span class="quick-link-desc">TCP, DNS, WebSocket tests</span>
+                    </a>
+                    <a href="devops.html" class="quick-link">
+                        <span class="quick-link-icon">⚙️</span>
+                        <span class="quick-link-title">DevOps Center</span>
+                        <span class="quick-link-desc">Service management</span>
+                    </a>
+                    <a href="agent-dashboard.html" class="quick-link">
+                        <span class="quick-link-icon">🤖</span>
+                        <span class="quick-link-title">Agent Dashboard</span>
+                        <span class="quick-link-desc">Task automation</span>
+                    </a>
+                    <a href="https://github.com/jag18729" class="quick-link external" target="_blank">
+                        <span class="quick-link-icon">💻</span>
+                        <span class="quick-link-title">GitHub Profile</span>
+                        <span class="quick-link-desc">All repositories</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- API Status -->
+            <div style="margin-bottom: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                <div class="api-status">
+                    <span class="api-dot" id="gateway-status"></span>
+                    <span>API Gateway</span>
+                </div>
+                <div class="api-status">
+                    <span class="api-dot" id="pihole-status"></span>
+                    <span>Pi-hole API</span>
+                </div>
+                <div class="api-status">
+                    <span class="api-dot" id="prometheus-status"></span>
+                    <span>Prometheus</span>
+                </div>
+            </div>
+
+            <!-- Live Metrics -->
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-value" id="dns-queries">--</div>
+                    <div class="metric-label">DNS Queries Today</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="dns-blocked">--</div>
+                    <div class="metric-label">Ads Blocked</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="block-percent">--%</div>
+                    <div class="metric-label">Block Rate</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">99.9%</div>
+                    <div class="metric-label">Uptime</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="services-online">--</div>
+                    <div class="metric-label">Services Online</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">24/7</div>
+                    <div class="metric-label">Monitoring</div>
+                </div>
+            </div>
+
+            <!-- Infrastructure Overview Cards -->
+            <h3>Infrastructure Overview</h3>
+            <div class="infrastructure-grid">
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">Palo Alto PA-220</div>
+                        <div class="device-status status-online">ONLINE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">Role:</span><span class="info-value">Edge Firewall</span></div>
+                        <div class="info-row"><span class="info-label">IP:</span><span class="info-value">192.168.1.1</span></div>
+                        <div class="info-row"><span class="info-label">Features:</span><span class="info-value">IPS, URL Filter, VPN</span></div>
+                    </div>
+                </div>
+
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">Pi1 (Vandine Primary)</div>
+                        <div class="device-status status-online">ONLINE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">IP:</span><span class="info-value">192.168.2.70</span></div>
+                        <div class="info-row"><span class="info-label">Services:</span><span class="info-value">Pi-hole, nginx, APIs</span></div>
+                        <div class="info-row"><span class="info-label">Model:</span><span class="info-value">RPi 4B 8GB</span></div>
+                    </div>
+                </div>
+
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">UniFi Dream Machine</div>
+                        <div class="device-status status-online">ONLINE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">Role:</span><span class="info-value">Core Router</span></div>
+                        <div class="info-row"><span class="info-label">IP:</span><span class="info-value">192.168.2.1</span></div>
+                        <div class="info-row"><span class="info-label">WiFi:</span><span class="info-value">U7 Pro (WiFi 7)</span></div>
+                    </div>
+                </div>
+
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">Cloudflare Tunnel</div>
+                        <div class="device-status status-online">ACTIVE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">Domains:</span><span class="info-value">vandine.us</span></div>
+                        <div class="info-row"><span class="info-label">Edge:</span><span class="info-value">LAX (Los Angeles)</span></div>
+                        <div class="info-row"><span class="info-label">Protection:</span><span class="info-value">DDoS, WAF</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Infrastructure Page -->
+        <div id="infrastructure" class="page">
+            <h3>Full Infrastructure Details</h3>
+            <div class="infrastructure-grid">
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">Palo Alto PA-220</div>
+                        <div class="device-status status-online">ONLINE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">Role:</span><span class="info-value">Edge Firewall</span></div>
+                        <div class="info-row"><span class="info-label">IP:</span><span class="info-value">192.168.1.1</span></div>
+                        <div class="info-row"><span class="info-label">Threats Blocked:</span><span class="info-value">15,847</span></div>
+                        <div class="info-row"><span class="info-label">Uptime:</span><span class="info-value">45d 12h</span></div>
+                    </div>
+                    <div class="device-actions">
+                        <button onclick="fetchPaloAltoStatus()">Fetch Status</button>
+                    </div>
+                </div>
+
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">RPi-1 (Pi-hole)</div>
+                        <div class="device-status status-online">ONLINE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">IP:</span><span class="info-value">192.168.2.70</span></div>
+                        <div class="info-row"><span class="info-label">Service:</span><span class="info-value">DNS Filter</span></div>
+                        <div class="info-row"><span class="info-label">Blocked Today:</span><span class="info-value" id="pi-blocked">--</span></div>
+                    </div>
+                    <div class="device-actions">
+                        <button onclick="fetchPiholeStats()">Fetch Stats</button>
+                    </div>
+                </div>
+
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">RPi-0 (Logging)</div>
+                        <div class="device-status status-online">ONLINE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">IP:</span><span class="info-value">192.168.2.101</span></div>
+                        <div class="info-row"><span class="info-label">Services:</span><span class="info-value">NFS, Rsyslog</span></div>
+                    </div>
+                </div>
+
+                <div class="device-card online">
+                    <div class="device-header">
+                        <div class="device-name">Proxmox VE</div>
+                        <div class="device-status status-online">ONLINE</div>
+                    </div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-label">IP:</span><span class="info-value">192.168.2.29</span></div>
+                        <div class="info-row"><span class="info-label">VMs:</span><span class="info-value">12 Running</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-box" id="infra-result">Infrastructure details will appear here...</div>
+        </div>
+
+        <!-- Experience Page -->
+        <div id="experience" class="page">
+            <div class="experience-section">
+                <div class="experience-header">
+                    <div>
+                        <h2 class="experience-title">NASA Jet Propulsion Laboratory</h2>
+                        <div class="experience-role">Contract Network Engineer</div>
+                        <div class="experience-date">July 2022 - Present</div>
+                    </div>
+                    <div class="api-status" style="background: rgba(0, 81, 195, 0.2); border: 1px solid #0051c3;">
+                        <span style="color: #00d4ff;">Deep Space Network</span>
+                    </div>
+                </div>
+
+                <div class="experience-highlights">
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🛰️</span>
+                        <span class="highlight-text">Deep Space Network (DSN) infrastructure support for interplanetary missions</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🌐</span>
+                        <span class="highlight-text">Enterprise DNS migration from BIND to Infoblox DDI platform</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">📡</span>
+                        <span class="highlight-text">Starlink integration for mobile antenna complexes</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🔥</span>
+                        <span class="highlight-text">Palo Alto PA-440 firewall deployments and security policies</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">🐍</span>
+                        <span class="highlight-text">Python automation for network diagnostics and monitoring</span>
+                    </div>
+                    <div class="highlight-item">
+                        <span class="highlight-icon">📋</span>
+                        <span class="highlight-text">Network documentation and infrastructure standards</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Technical Skills</h3>
+            <div class="infrastructure-grid">
+                <div class="device-card online">
+                    <div class="device-name">Networking</div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-value">Palo Alto, Cisco, Juniper</span></div>
+                        <div class="info-row"><span class="info-value">BGP, OSPF, VLAN, VPN</span></div>
+                        <div class="info-row"><span class="info-value">IPv4/IPv6, DNS, DHCP</span></div>
+                    </div>
+                </div>
+                <div class="device-card online">
+                    <div class="device-name">Cloud & DevOps</div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-value">AWS, Cloudflare, Docker</span></div>
+                        <div class="info-row"><span class="info-value">Terraform, GitHub Actions</span></div>
+                        <div class="info-row"><span class="info-value">Prometheus, Grafana</span></div>
+                    </div>
+                </div>
+                <div class="device-card online">
+                    <div class="device-name">Programming</div>
+                    <div class="device-info">
+                        <div class="info-row"><span class="info-value">Python, JavaScript, TypeScript</span></div>
+                        <div class="info-row"><span class="info-value">FastAPI, Django, React</span></div>
+                        <div class="info-row"><span class="info-value">PostgreSQL, MongoDB</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Page -->
+        <div id="projects" class="page">
+            <h3>Featured GitHub Projects</h3>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-category">Infrastructure</div>
+                    <div class="project-name"><a href="https://github.com/jag18729/vandine-network-monitor" target="_blank">vandine-network-monitor</a></div>
+                    <div class="project-desc">Comprehensive network monitoring with Django, FastAPI, and real-time metrics. Powers this dashboard.</div>
+                    <div class="project-tech">
+                        <span class="tech-badge">Python</span>
+                        <span class="tech-badge">FastAPI</span>
+                        <span class="tech-badge">Docker</span>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-category">Cloud/IaC</div>
+                    <div class="project-name"><a href="https://github.com/jag18729/AWS-IPERF3-DSN-Terraform" target="_blank">AWS-IPERF3-DSN-Terraform</a></div>
+                    <div class="project-desc">Terraform infrastructure for AWS with 3 VPCs, inspired by NASA DSN architecture.</div>
+                    <div class="project-tech">
+                        <span class="tech-badge">Terraform</span>
+                        <span class="tech-badge">AWS</span>
+                        <span class="tech-badge">VPC</span>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-category">Kubernetes</div>
+                    <div class="project-name"><a href="https://github.com/jag18729/iperf3-kubernetes-cluster-aws" target="_blank">iperf3-kubernetes-cluster-aws</a></div>
+                    <div class="project-desc">Kubernetes cluster for network throughput monitoring and testing.</div>
+                    <div class="project-tech">
+                        <span class="tech-badge">Kubernetes</span>
+                        <span class="tech-badge">AWS EKS</span>
+                        <span class="tech-badge">iperf3</span>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-category">Full-Stack</div>
+                    <div class="project-name"><a href="https://github.com/jag18729/SvelteKit-Deno-Nextjs-Iperf3-Full-stack" target="_blank">SvelteKit-Deno-Nextjs-Full-stack</a></div>
+                    <div class="project-desc">Multi-framework full-stack application with network testing capabilities.</div>
+                    <div class="project-tech">
+                        <span class="tech-badge">SvelteKit</span>
+                        <span class="tech-badge">Next.js</span>
+                        <span class="tech-badge">Deno</span>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-category">Backend</div>
+                    <div class="project-name"><a href="https://github.com/jag18729/fastapi-iperf3-dashboard" target="_blank">fastapi-iperf3-dashboard</a></div>
+                    <div class="project-desc">FastAPI backend with comprehensive error handling for network performance testing.</div>
+                    <div class="project-tech">
+                        <span class="tech-badge">FastAPI</span>
+                        <span class="tech-badge">Python</span>
+                        <span class="tech-badge">iperf3</span>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-category">Database</div>
+                    <div class="project-name"><a href="https://github.com/jag18729/IS441-Baseball-DB" target="_blank">IS441-Baseball-DB</a></div>
+                    <div class="project-desc">Moneyball-inspired 7-table relational database for baseball analytics.</div>
+                    <div class="project-tech">
+                        <span class="tech-badge">PostgreSQL</span>
+                        <span class="tech-badge">SQL</span>
+                        <span class="tech-badge">Analytics</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="https://github.com/jag18729" target="_blank" class="device-actions">
+                    <button>View All Projects on GitHub</button>
+                </a>
+            </div>
+        </div>
+
+        <!-- Monitoring Page -->
+        <div id="monitoring" class="page">
+            <h3>Live System Monitoring</h3>
+            <div class="result-box" id="live-log" style="min-height: 300px;">
+Connecting to monitoring services...
+            </div>
+
+            <div style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button onclick="fetchGatewayHealth()" class="device-actions" style="background: none; border: none;">
+                    <button>Refresh Gateway Health</button>
+                </button>
+                <button onclick="fetchPiholeStats()" class="device-actions" style="background: none; border: none;">
+                    <button>Refresh Pi-hole Stats</button>
+                </button>
+                <button onclick="fetchAllStatus()" class="device-actions" style="background: none; border: none;">
+                    <button>Refresh All Services</button>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="https://github.com/jag18729" target="_blank">GitHub</a>
+            <a href="https://linkedin.com/in/rafaeljgarcia" target="_blank">LinkedIn</a>
+            <a href="nasa.html">NASA Principles</a>
+            <a href="dns-dashboard.html">DNS Dashboard</a>
+            <a href="network-test.html">Network Lab</a>
+        </div>
+        <div class="footer-copyright">
+            &copy; 2026 Rafael J. Garcia | Vandine Network Operations Center
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE = 'http://192.168.2.70:8887';
+        const PIHOLE_API = 'http://192.168.2.70:8889';
+
+        // Page switching
+        function switchPage(event, pageName) {
+            document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+
+            document.getElementById(pageName).classList.add('active');
+        }
+
+        // Fetch API Gateway health
+        async function fetchGatewayHealth() {
+            const statusDot = document.getElementById('gateway-status');
+            try {
+                const response = await fetch(`${API_BASE}/health`, {
+                    mode: 'cors',
+                    signal: AbortSignal.timeout(5000)
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    statusDot.classList.remove('offline');
+                    updateLiveLog(`[GATEWAY] Status: ${data.status} | Uptime: ${data.uptime || 'N/A'}`);
+                    return data;
+                }
+            } catch (e) {
+                statusDot.classList.add('offline');
+                updateLiveLog(`[GATEWAY] Connection failed: ${e.message}`);
+            }
+            return null;
+        }
+
+        // Fetch Pi-hole stats
+        async function fetchPiholeStats() {
+            const statusDot = document.getElementById('pihole-status');
+            try {
+                const response = await fetch(`${PIHOLE_API}/api/pihole/summary`, {
+                    mode: 'cors',
+                    signal: AbortSignal.timeout(5000)
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    statusDot.classList.remove('offline');
+
+                    // Update metrics
+                    document.getElementById('dns-queries').textContent = Number(data.dns_queries_today || 0).toLocaleString();
+                    document.getElementById('dns-blocked').textContent = Number(data.ads_blocked_today || 0).toLocaleString();
+                    document.getElementById('block-percent').textContent = (data.ads_percentage_today || 0).toFixed(1) + '%';
+                    document.getElementById('pi-blocked').textContent = Number(data.ads_blocked_today || 0).toLocaleString();
+
+                    updateLiveLog(`[PIHOLE] Queries: ${data.dns_queries_today} | Blocked: ${data.ads_blocked_today} (${data.ads_percentage_today}%)`);
+                    return data;
+                }
+            } catch (e) {
+                statusDot.classList.add('offline');
+                updateLiveLog(`[PIHOLE] Connection failed: ${e.message}`);
+            }
+            return null;
+        }
+
+        // Fetch all service status
+        async function fetchAllStatus() {
+            updateLiveLog('[SYSTEM] Fetching all service status...');
+            try {
+                const response = await fetch(`${API_BASE}/api/status`, {
+                    mode: 'cors',
+                    signal: AbortSignal.timeout(5000)
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    let online = 0;
+                    for (const [service, status] of Object.entries(data.services || {})) {
+                        if (status === 'online') online++;
+                        updateLiveLog(`[${service.toUpperCase()}] ${status}`);
+                    }
+                    document.getElementById('services-online').textContent = online;
+                }
+            } catch (e) {
+                updateLiveLog(`[STATUS] Failed to fetch: ${e.message}`);
+            }
+        }
+
+        // Fetch Palo Alto status (simulated for now)
+        function fetchPaloAltoStatus() {
+            const result = document.getElementById('infra-result');
+            result.textContent = 'Fetching Palo Alto PA-220 status...\n\n';
+            setTimeout(() => {
+                result.textContent += `PA-220 Status:
+Hostname: PA-220-EDGE
+Software: PAN-OS 11.0.3
+Uptime: 45 days, 12:23:45
+CPU: 34% | Memory: 67%
+Sessions: 12,451 / 64,000
+Threat Prevention: Enabled
+WildFire: Connected`;
+            }, 1000);
+        }
+
+        // Update live log
+        function updateLiveLog(message) {
+            const log = document.getElementById('live-log');
+            const timestamp = new Date().toLocaleTimeString();
+            log.textContent += `\n[${timestamp}] ${message}`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Check Prometheus status
+        async function checkPrometheus() {
+            const statusDot = document.getElementById('prometheus-status');
+            try {
+                const response = await fetch('http://192.168.2.70:9090/-/healthy', {
+                    mode: 'cors',
+                    signal: AbortSignal.timeout(3000)
+                });
+                if (response.ok) {
+                    statusDot.classList.remove('offline');
+                }
+            } catch (e) {
+                statusDot.classList.add('offline');
+            }
+        }
+
+        // Initialize on page load
+        window.onload = async function() {
+            updateLiveLog('Initializing dashboard...');
+
+            // Check all services
+            await Promise.all([
+                fetchGatewayHealth(),
+                fetchPiholeStats(),
+                checkPrometheus()
+            ]);
+
+            await fetchAllStatus();
+            updateLiveLog('Dashboard initialized.');
+
+            // Refresh Pi-hole stats every 30 seconds
+            setInterval(fetchPiholeStats, 30000);
+        };
+    </script>
+</body>
+</html>
