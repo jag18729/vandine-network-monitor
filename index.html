@@ -11,7 +11,7 @@
         
         /* Animated background */
         body {
-            font-family: -apple-system, system-ui, sans-serif;
+            font-family: 'JetBrains Mono', -apple-system, system-ui, monospace; font-size: 15px; line-height: 1.7;
             background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0d1225 100%);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
@@ -72,7 +72,7 @@
 
         .header {
             background: rgba(10, 14, 39, 0.85);
-            padding: 1rem 2rem;
+            padding: 1.5rem 4rem;
             border-bottom: 2px solid transparent;
             border-image: linear-gradient(90deg, #00d4ff, #10b981, #6366f1, #00d4ff) 1;
             position: sticky;
@@ -133,7 +133,7 @@
             padding: 0.4rem 0.8rem;
             border-radius: 5px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             border: 1px solid transparent;
             position: relative;
         }
@@ -158,11 +158,11 @@
             width: 80%;
         }
         
-        .container { max-width: 1800px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; }
+        .container { max-width: 1500px; margin: 0 auto; padding: 3rem 5rem; position: relative; z-index: 1; }
         
         h1 { 
             text-align: center; 
-            font-size: 2.5rem; 
+            font-size: 3.2rem; 
             margin-bottom: 0.5rem;
             background: linear-gradient(135deg, #00d4ff, #10b981, #6366f1);
             background-size: 200% 200%;
@@ -179,12 +179,12 @@
             100% { background-position: 0% 50%; }
         }
         
-        .subtitle { text-align: center; color: #a1a1aa; margin-bottom: 1rem; letter-spacing: 2px; }
+        .subtitle { text-align: center; color: #a1a1aa; margin-bottom: 1rem; letter-spacing: 4px; font-size: 1.1rem; }
 
         .main-tabs {
             display: flex;
             gap: 0.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             background: rgba(10, 14, 39, 0.6);
             padding: 0.75rem;
             border-radius: 15px;
@@ -194,14 +194,14 @@
             border: 1px solid rgba(42, 46, 74, 0.5);
         }
         .main-tab {
-            padding: 0.8rem 1.2rem;
+            padding: 1rem 1.5rem;
             background: transparent;
             border: 2px solid transparent;
             color: #a1a1aa;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 1rem;
             white-space: nowrap;
             text-decoration: none;
             position: relative;
@@ -242,10 +242,10 @@
         /* Quick Links - Glassmorphism */
         .quick-links {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 0.75rem;
-            margin-bottom: 2rem;
-            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            padding: 2.5rem;
             background: rgba(10, 14, 39, 0.4);
             border-radius: 20px;
             backdrop-filter: blur(10px);
@@ -255,7 +255,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 1.25rem;
+            padding: 2.5rem;
             background: rgba(21, 25, 50, 0.6);
             border: 1px solid rgba(42, 46, 74, 0.5);
             border-radius: 12px;
@@ -288,7 +288,7 @@
             background: rgba(21, 25, 50, 0.8);
         }
         .quick-link-icon { 
-            font-size: 2rem; 
+            font-size: 2.5rem; 
             margin-bottom: 0.5rem;
             transition: transform 0.3s ease;
         }
@@ -296,7 +296,7 @@
             transform: scale(1.2);
         }
         .quick-link-title { 
-            font-size: 0.85rem; 
+            font-size: 0.95rem; 
             color: #00ff88; 
             font-weight: 600;
             text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
@@ -304,9 +304,9 @@
 
         .infrastructure-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
         /* Device Cards - Enhanced Glassmorphism */
@@ -314,7 +314,7 @@
             background: rgba(21, 25, 50, 0.7);
             border: 1px solid rgba(42, 46, 74, 0.6);
             border-radius: 16px;
-            padding: 1.5rem;
+            padding: 2.5rem;
             position: relative;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
@@ -362,7 +362,7 @@
             margin-bottom: 1rem;
         }
         .device-name {
-            font-size: 1.2rem;
+            font-size: 1.35rem;
             color: #00ff88;
             font-weight: bold;
             text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
@@ -430,7 +430,7 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
             position: relative;
@@ -469,8 +469,8 @@
             background: rgba(21, 25, 50, 0.6);
             border: 1px solid rgba(42, 46, 74, 0.5);
             border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
             backdrop-filter: blur(10px);
         }
 
@@ -478,8 +478,8 @@
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(0, 212, 255, 0.05));
             border: 2px solid rgba(16, 185, 129, 0.5);
             border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
             position: relative;
             overflow: hidden;
         }
@@ -501,14 +501,14 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            padding: 1.25rem;
+            padding: 2.5rem;
             background: rgba(0, 0, 0, 0.4);
             border-radius: 12px;
             margin-bottom: 1rem;
             border: 1px solid rgba(42, 46, 74, 0.5);
         }
         .trust-level {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: bold;
         }
         .trust-high { 
@@ -533,11 +533,11 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
         .metric {
             background: rgba(0, 0, 0, 0.4);
-            padding: 1.25rem;
+            padding: 2.5rem;
             border-radius: 12px;
             text-align: center;
             border: 1px solid rgba(42, 46, 74, 0.5);
@@ -564,7 +564,7 @@
             border-color: rgba(0, 212, 255, 0.3);
         }
         .metric-value {
-            font-size: 2rem;
+            font-size: 2.5rem;
             color: #00d4ff;
             font-weight: bold;
             font-family: 'JetBrains Mono', monospace;
@@ -580,7 +580,7 @@
 
         .result-box {
             margin-top: 1rem;
-            padding: 1.25rem;
+            padding: 2.5rem;
             background: rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(0, 255, 136, 0.2);
             border-radius: 10px;
@@ -608,7 +608,7 @@
         h3 {
             color: #00ff88;
             margin-bottom: 1rem;
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             text-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
             position: relative;
             display: inline-block;
@@ -667,7 +667,7 @@
             background: rgba(10, 14, 39, 0.95);
             border: 2px solid #10b981;
             border-radius: 16px;
-            padding: 1.25rem;
+            padding: 2.5rem;
             min-width: 250px;
             z-index: 50;
             backdrop-filter: blur(20px);
@@ -686,7 +686,7 @@
         .footer {
             background: rgba(10, 14, 39, 0.9);
             border-top: 1px solid rgba(42, 46, 74, 0.5);
-            padding: 2rem;
+            padding: 2.5rem;
             margin-top: 2rem;
             text-align: center;
             backdrop-filter: blur(10px);
@@ -718,7 +718,7 @@
             color: #a1a1aa;
             cursor: pointer;
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             font-weight: 500;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             outline: none;
@@ -1060,7 +1060,7 @@ Click "Run Cloudflare Speed Test" for full performance metrics</div>
                 <h3>Route Testing & Comparison</h3>
                 <p style="color: #a1a1aa; margin-bottom: 1.5rem;">Compare performance across different network routes and tunnels.</p>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
                     <div class="device-card online">
                         <div class="device-name">Cloudflare Route</div>
                         <p style="color: #a1a1aa; margin: 0.5rem 0 1rem;">Optimized path through Cloudflare Argo (LAX)</p>
@@ -1155,7 +1155,7 @@ Click "Run Cloudflare Speed Test" for full performance metrics</div>
                 
                 <!-- SNMP Interface Monitoring -->
                 <h3 style="margin-top: 2rem;">SNMP Interface Monitoring</h3>
-                <div id="snmp-status" style="padding: 0.5rem 1rem; background: rgba(0,0,0,0.3); border-radius: 5px; margin-bottom: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+                <div id="snmp-status" style="padding: 0.5rem 1rem; background: rgba(0,0,0,0.3); border-radius: 5px; margin-bottom: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem;">
                     <span id="snmp-indicator" style="color: #a1a1aa;">Connecting to SNMP exporter...</span>
                 </div>
                 
@@ -1312,7 +1312,7 @@ Networks:
                 </div>
 
                 <!-- Device Cards -->
-                <div class="infrastructure-grid" style="margin-bottom: 2rem;">
+                <div class="infrastructure-grid" style="margin-bottom: 2.5rem;">
                     <div class="device-card online" id="udm-card">
                         <div class="device-header">
                             <div class="device-name">UDM Pro</div>
@@ -1338,7 +1338,7 @@ Networks:
                     
                     <div class="device-card" style="border-left: 4px solid #6366f1;">
                         <div class="device-name" style="color: #6366f1;">Top Interfaces</div>
-                        <div id="top-interfaces" style="margin-top: 0.5rem; font-size: 0.85rem;">
+                        <div id="top-interfaces" style="margin-top: 0.5rem; font-size: 0.95rem;">
                             <div style="color: #a1a1aa;">Loading...</div>
                         </div>
                     </div>
@@ -1358,7 +1358,7 @@ Networks:
                 <!-- Interface Table -->
                 <h3 style="margin-top: 1.5rem;">Interface Details</h3>
                 <div style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;" id="snmp-table">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;" id="snmp-table">
                         <thead style="position: sticky; top: 0; background: #151932; z-index: 10;">
                             <tr style="border-bottom: 2px solid #00d4ff;">
                                 <th style="padding: 0.75rem; text-align: left; color: #00d4ff; cursor: pointer;" onclick="sortTable('name')">Interface ▼</th>
@@ -1371,7 +1371,7 @@ Networks:
                             </tr>
                         </thead>
                         <tbody id="snmp-table-body">
-                            <tr><td colspan="7" style="padding: 2rem; text-align: center; color: #a1a1aa;">Loading SNMP data...</td></tr>
+                            <tr><td colspan="7" style="padding: 2.5rem; text-align: center; color: #a1a1aa;">Loading SNMP data...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -1399,7 +1399,7 @@ Click a query button above to fetch SNMP data...</div>
     <!-- Self-Healing Status -->
     <div class="healing-status">
         <div class="healing-active">🔧 Self-Healing: ACTIVE</div>
-        <div style="font-size: 0.85rem; color: #a1a1aa; margin-top: 0.5rem;">
+        <div style="font-size: 0.95rem; color: #a1a1aa; margin-top: 0.5rem;">
             Last heal: <span id="last-heal">2 min ago</span>
         </div>
     </div>
@@ -1413,7 +1413,7 @@ Click a query button above to fetch SNMP data...</div>
         <a href="agent-dashboard.html">Agent</a>
         <a href="https://github.com/jag18729" target="_blank">GitHub</a>
         <a href="/reveal/" target="_blank">Reveal.me</a>
-        <div style="margin-top: 1rem; color: #71717a; font-size: 0.85rem;">
+        <div style="margin-top: 1rem; color: #71717a; font-size: 0.95rem;">
             © 2026 Rafael J. Garcia | Vandine Network Operations Center
         </div>
     </footer>
@@ -1866,7 +1866,7 @@ Encryption: AES-256-GCM | PFS: Enabled`;
             const tbody = document.getElementById('snmp-table-body');
             
             if (interfaces.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="padding: 2rem; text-align: center; color: #a1a1aa;">No interfaces match filter</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="padding: 2.5rem; text-align: center; color: #a1a1aa;">No interfaces match filter</td></tr>';
                 return;
             }
             
