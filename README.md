@@ -167,6 +167,22 @@ docker-compose up -d
 - Real-time threat detection and response
 - SNMPv3 with SHA authentication and AES encryption
 
+## Documentation
+
+Comprehensive documentation available in [`/docs`](docs/):
+
+| Document | Description |
+|----------|-------------|
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System topology, service dependencies, security layers |
+| [SNMP_MONITORING.md](docs/SNMP_MONITORING.md) | SNMPv3 setup, metrics reference, PromQL queries |
+| [NGINX_CONFIGURATION.md](docs/NGINX_CONFIGURATION.md) | Reverse proxy, SSL, adding new services |
+| [CLOUDFLARE_SETUP.md](docs/CLOUDFLARE_SETUP.md) | Argo Tunnel, DNS, security settings |
+| [DASHBOARD_FEATURES.md](docs/DASHBOARD_FEATURES.md) | UI components, animations, responsive design |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment guide, CI/CD, rollback procedures |
+| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Common issues, diagnostics, recovery |
+| [API_REFERENCE.md](docs/API_REFERENCE.md) | All endpoints, PromQL examples |
+| [CHANGELOG.md](docs/CHANGELOG.md) | Version history and accomplishments |
+
 ## License
 
 MIT License
