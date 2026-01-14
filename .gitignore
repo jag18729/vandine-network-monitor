@@ -48,3 +48,8 @@ test-*.html
 # Temporary files
 *.tmp
 /tmp/
+
+# Local planning & context documentation (kept private)
+VANDINE_*.md
+REFACTORING_PLAN.md
+.claude/
