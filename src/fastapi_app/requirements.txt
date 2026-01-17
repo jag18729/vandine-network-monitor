@@ -18,7 +18,7 @@ aioredis==2.0.1
 netmiko==4.3.0
 paramiko==3.4.0
 psutil==5.9.6
-aiofiles==23.2.1
+aiofiles==25.1.0
 
 # Data validation
 pydantic==2.5.3
