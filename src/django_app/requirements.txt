@@ -49,7 +49,7 @@ factory-boy==3.3.0
 ipython==8.18.1
 black==23.12.1
 flake8==7.0.0
-mypy==1.7.1
+mypy==1.19.1
 
 # Utilities
 python-dotenv==1.0.0
